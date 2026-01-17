@@ -207,31 +207,72 @@ cd chambal-sandesh
 
 ### **3.3 Set Up Python Virtual Environment (via SSH)**
 
+**📖 Full Guide:** See `SSH_SETUP_GUIDE.md` for complete SSH setup instructions.
+
+**Quick Steps:**
+
+1. **Enable SSH in cPanel:**
+   - Go to cPanel → Security → SSH Access
+   - Enable SSH (or contact hosting support)
+
+2. **Connect via SSH:**
+   ```bash
+   # Windows PowerShell (built-in)
+   ssh username@yourdomain.com
+   
+   # Or use PuTTY (download from putty.org)
+   ```
+
+3. **Set Up Virtual Environment:**
+   ```bash
+   # Navigate to backend directory
+   cd ~/api/backend  # or wherever you uploaded
+   
+   # Check Python version
+   python3 --version
+   # Should show: Python 3.8.x or higher
+   
+   # Create virtual environment
+   python3 -m venv venv
+   # OR if that doesn't work:
+   python3.8 -m venv venv
+   
+   # Activate virtual environment
+   source venv/bin/activate
+   # You should see (venv) prefix in prompt
+   
+   # Upgrade pip
+   pip install --upgrade pip
+   
+   # Install dependencies
+   pip install -r requirements.txt
+   
+   # Install additional production dependencies
+   pip install gunicorn mysqlclient
+   ```
+
+4. **If `mysqlclient` fails, use PyMySQL:**
+   ```bash
+   pip install pymysql
+   ```
+   
+   Then edit `core/settings.py` and add at the very top:
+   ```python
+   import pymysql
+   pymysql.install_as_MySQLdb()
+   ```
+
+**⚠️ Important:** Every time you SSH into the server, activate the virtual environment:
 ```bash
-# Navigate to backend directory
-cd ~/api/backend  # or wherever you uploaded
-
-# Create virtual environment
-python3.8 -m venv venv
-
-# Activate virtual environment
+cd ~/api/backend
 source venv/bin/activate
-
-# Install dependencies
-pip install --upgrade pip
-pip install -r requirements.txt
-
-# Install additional production dependencies
-pip install gunicorn mysqlclient
 ```
 
-**Note:** If `mysqlclient` fails, use:
-```bash
-pip install pymysql
-# Then in settings.py, add at top:
-# import pymysql
-# pymysql.install_as_MySQLdb()
-```
+**📚 Need help with SSH?** See `SSH_SETUP_GUIDE.md` for:
+- How to enable SSH access
+- How to connect from Windows/Mac/Linux
+- Troubleshooting common issues
+- Step-by-step instructions
 
 ### **3.4 Configure Environment Variables**
 
