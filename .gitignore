@@ -1,0 +1,92 @@
+# Python
+*.pyc
+__pycache__/
+*.log
+*.pot
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv
+
+# Django
+*.log
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+*.pot
+local_settings.py
+
+# Environment variables
+.env
+.env.local
+.env.production
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Node.js / Next.js
+node_modules/
+.next/
+out/
+dist/
+build/
+.npm
+.eslintcache
+*.log
+
+# Database backups
+*.sql
+*.sqlite
+*.db
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Testing
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Build files
+build/
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Package files
+*.tar.gz
+*.zip
+
+# Database
+*.sql
+database_backup*.sql
