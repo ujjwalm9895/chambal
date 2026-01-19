@@ -202,7 +202,7 @@ Frontend will run on `http://localhost:3000`
 - Public website: `http://localhost:3000`
 - CMS panel: `http://localhost:3000/cms`
 
-## 📡 API Endpoints
+## API Endpoints
 
 ### Auth APIs (Public)
 - `POST /api/auth/login/` - Login (returns JWT tokens)
