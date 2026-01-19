@@ -2,19 +2,19 @@
 
 A production-ready, fully data-driven CMS-based news website built with Django REST Framework (Backend) and Next.js (Frontend). Features a **custom CMS panel** (NOT Django Admin) with complete workflow management.
 
-## 🎯 Project Overview
+## Project Overview
 
 **Chambal Sandesh** is a complete CMS solution where:
-- ✅ **Custom CMS Panel** - Built with Next.js (not Django Admin)
-- ✅ **JWT Authentication** - Secure token-based auth
-- ✅ **Post Workflow** - Draft → Pending → Scheduled → Published
-- ✅ **Role-Based Access** - Admin, Editor, Writer roles
-- ✅ **Bulk Upload** - CSV import for posts
-- ✅ **Homepage Builder** - Dynamic sections management
-- ✅ **Multi-Language** - Hindi + English support
-- ✅ **Everything CMS-Driven** - Zero hardcoded content
+- **Custom CMS Panel** - Built with Next.js (not Django Admin)
+- **JWT Authentication** - Secure token-based auth
+- **Post Workflow** - Draft → Pending → Scheduled → Published
+- **Role-Based Access** - Admin, Editor, Writer roles
+- **Bulk Upload** - CSV import for posts
+- **Homepage Builder** - Dynamic sections management
+- **Multi-Language** - Hindi + English support
+- **Everything CMS-Driven** - Zero hardcoded content
 
-## 🏗️ Tech Stack
+## Tech Stack
 
 ### Backend
 - **Django 4.2** - Web framework
@@ -30,7 +30,7 @@ A production-ready, fully data-driven CMS-based news website built with Django R
 - **Axios** - HTTP client
 - **React Hot Toast** - Notifications
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 chambal/
@@ -99,7 +99,7 @@ chambal/
 - `Page`: `title`, `slug`, SEO fields
 - `PageSection`: `section_type` (hero/slider/article_list/banner/html), `data` (JSON), `order`
 
-## 🚀 Setup Instructions
+## Setup Instructions
 
 ### Prerequisites
 - Python 3.8+
@@ -241,7 +241,7 @@ Frontend will run on `http://localhost:3000`
 - **Editor**: Can approve posts, manage content (except users)
 - **Writer**: Can create/edit own posts, cannot approve
 
-## 🎨 CMS Panel Features
+## CMS Panel Features
 
 ### Dashboard
 - Statistics cards (Total, Published, Pending, Drafts, Scheduled, etc.)
@@ -266,7 +266,7 @@ Frontend will run on `http://localhost:3000`
 - **Pages**: Custom pages with SEO
 - **Users**: User management (Admin only)
 
-## 🌍 Public Website
+## Public Website
 
 ### Homepage
 - Dynamically renders sections from CMS
@@ -290,7 +290,7 @@ switch(section.section_type) {
 }
 ```
 
-## 🔄 Post Workflow
+## Post Workflow
 
 1. **Draft** - Writer creates post (not visible on website)
 2. **Pending** - Writer submits for review (visible to editors)
@@ -302,7 +302,7 @@ switch(section.section_type) {
 - Editor/Admin: Pending → Published (or Scheduled)
 - Editor/Admin: Can directly publish drafts
 
-## 📤 Bulk Upload
+## Bulk Upload
 
 ### CSV Format
 Required columns:
@@ -322,14 +322,14 @@ Optional columns:
 3. Preview validation errors
 4. Confirm upload
 
-## 🌐 Multi-Language Support
+## Multi-Language Support
 
 - Categories support Hindi (`hi`) and English (`en`)
 - Posts can be in Hindi or English
 - Filter by language: `?lang=hi`
 - Language switch in CMS topbar
 
-## 🔍 SEO Features
+## SEO Features
 
 - Dynamic meta tags per post/page
 - OpenGraph support
@@ -356,7 +356,7 @@ Optional columns:
    - CMS panel: `http://localhost:3000/cms`
    - Login with superuser credentials
 
-## 🧪 Testing the CMS
+## Testing the CMS
 
 For comprehensive testing instructions, see **[TESTING_GUIDE.md](TESTING_GUIDE.md)**.
 
@@ -368,21 +368,21 @@ Quick test checklist:
 5. Build homepage with sections
 6. Verify all content renders on public website
 
-**📖 For detailed step-by-step testing instructions, refer to `TESTING_GUIDE.md`**
+**For detailed step-by-step testing instructions, refer to `TESTING_GUIDE.md`**
 
-## 📝 Key Features
+## Key Features
 
-✅ **Custom CMS Panel** - Built with Next.js, not Django Admin  
-✅ **JWT Authentication** - Secure token-based auth  
-✅ **Post Workflow** - Complete draft → published flow  
-✅ **Role-Based Access** - Admin, Editor, Writer roles  
-✅ **Bulk Upload** - CSV import for posts  
-✅ **Homepage Builder** - Dynamic sections management  
-✅ **Multi-Language** - Hindi and English support  
-✅ **SEO Optimized** - Meta tags, OpenGraph, SSR  
-✅ **Production Ready** - Scalable architecture  
+ **Custom CMS Panel** - Built with Next.js, not Django Admin  
+ **JWT Authentication** - Secure token-based auth  
+ **Post Workflow** - Complete draft → published flow  
+ **Role-Based Access** - Admin, Editor, Writer roles  
+ **Bulk Upload** - CSV import for posts  
+ **Homepage Builder** - Dynamic sections management  
+ **Multi-Language** - Hindi and English support  
+ **SEO Optimized** - Meta tags, OpenGraph, SSR  
+ **Production Ready** - Scalable architecture  
 
-## 🆘 Troubleshooting
+## Troubleshooting
 
 ### Backend Issues
 - **Database connection error**: Check MySQL credentials in `.env`
@@ -394,7 +394,7 @@ Quick test checklist:
 - **CORS errors**: Ensure `django-cors-headers` is configured
 - **JWT token errors**: Clear localStorage and re-login
 
-## 🚀 Production Deployment
+## Production Deployment
 
 ### Backend:
 - Set `DEBUG=False`
@@ -410,7 +410,7 @@ Quick test checklist:
 - Configure production API URL
 - Set up reverse proxy if needed
 
-## 📄 License
+## License
 
 This project is built for production use.
 
