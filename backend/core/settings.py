@@ -2,6 +2,9 @@
 Django settings for Chambal Sandesh project.
 """
 
+import pymysql
+pymysql.install_as_MySQLdb()
+
 from pathlib import Path
 from decouple import config
 

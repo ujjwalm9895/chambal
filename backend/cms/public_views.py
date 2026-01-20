@@ -59,7 +59,7 @@ class PublicPostViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = PublicPostListSerializer
     permission_classes = [AllowAny]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['category', 'language', 'is_featured', 'is_slider', 'is_breaking']
+    filterset_fields = ['language', 'is_featured', 'is_slider', 'is_breaking']
     search_fields = ['title', 'content', 'slug']
     ordering_fields = ['publish_at', 'created_at', 'views_count']
     ordering = ['-publish_at']

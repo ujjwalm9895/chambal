@@ -15,10 +15,12 @@ export const metadata = {
 
 async function getHomepageData() {
   try {
+    console.log('Fetching homepage data from:', process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api');
     const data = await getHomepage();
+    console.log('Homepage data fetched successfully:', data ? 'Has data' : 'No data');
     return data;
   } catch (error) {
-    console.error('Error fetching homepage data:', error);
+    console.error('Error fetching homepage data:', error.message || error);
     return null;
   }
 }

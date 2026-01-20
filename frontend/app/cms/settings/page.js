@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { cmsApiClient } from '@/lib/cms-api';
+import cmsApiClient from '@/lib/cms-api';
 import toast from 'react-hot-toast';
 import { FiSave, FiUpload, FiX } from 'react-icons/fi';
 
