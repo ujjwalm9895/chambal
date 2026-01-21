@@ -1,8 +1,8 @@
-import os
-import sys
+import os, sys
 
-# Set up the path to the backend directory
 sys.path.insert(0, os.path.dirname(__file__))
 
-# Point to the Django application
-from core.wsgi import application
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+
+from django.core.wsgi import get_wsgi_application
+application = get_wsgi_application()
