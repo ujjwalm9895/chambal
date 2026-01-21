@@ -7,6 +7,7 @@ ALLOWED_HOSTS = [
     'news.invitevista.com',
     'www.news.invitevista.com',
     'api.news.invitevista.com',
+    
 ]
 
 DATABASES = {
