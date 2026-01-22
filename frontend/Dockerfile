@@ -25,6 +25,11 @@ ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
 # Next.js collects completely anonymous telemetry data about general usage.
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Debug: Check file structure before build
+RUN ls -la /app
+RUN ls -la /app/lib || echo "lib directory not found"
+RUN cat /app/jsconfig.json || echo "jsconfig.json not found"
+
 RUN npm run build
 
 # Production image, copy all the files and run next

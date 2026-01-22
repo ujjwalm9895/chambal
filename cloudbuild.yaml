@@ -33,7 +33,7 @@ steps:
       - 'NEXT_PUBLIC_API_BASE_URL=${_NEXT_PUBLIC_API_BASE_URL}'
       - '-t'
       - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-frontend'
-      - './frontend-legacy'
+      - './frontend'
 
   # Push Frontend
   - name: 'gcr.io/cloud-builders/docker'
