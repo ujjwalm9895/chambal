@@ -2,8 +2,8 @@
 const nextConfig = {
   reactStrictMode: true,
 
-  // ✅ REQUIRED for static export
-  output: "export",
+  // ✅ REQUIRED for standalone build (Docker)
+  output: "standalone",
 
   images: {
     unoptimized: true,
