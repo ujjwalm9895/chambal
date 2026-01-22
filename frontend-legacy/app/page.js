@@ -3,6 +3,8 @@ import Footer from '@/components/Footer';
 import SectionRenderer from '@/components/sections/SectionRenderer';
 import { getHomepage } from '@/lib/api';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
   title: 'Chambal Sandesh - Latest News & Updates',
   description: 'Your trusted source for latest news, updates, and stories from the Chambal region',

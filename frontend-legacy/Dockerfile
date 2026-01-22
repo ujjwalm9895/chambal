@@ -1,5 +1,8 @@
 FROM node:18-alpine AS base
 
+# Update npm to latest version to avoid warnings
+RUN npm install -g npm@latest
+
 # Install dependencies only when needed
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
