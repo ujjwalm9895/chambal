@@ -69,7 +69,11 @@ substitutions:
   _GS_BUCKET_NAME: chambal-sandesh-media-prod
   _NEXT_PUBLIC_API_BASE_URL: https://api.news.invitevista.com
 
-  
+
 images:
   - 'gcr.io/$PROJECT_ID/chambal-backend'
   - 'gcr.io/$PROJECT_ID/chambal-frontend'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  
