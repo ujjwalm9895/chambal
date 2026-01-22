@@ -25,6 +25,13 @@ const nextConfig = {
     NEXT_PUBLIC_API_BASE_URL:
       process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api",
   },
+
+  // ✅ Explicitly configure Webpack aliases to prevent "Module not found" in Docker
+  webpack: (config, { isServer }) => {
+    const path = require('path');
+    config.resolve.alias['@'] = path.join(__dirname);
+    return config;
+  },
 };
 
 module.exports = nextConfig;
