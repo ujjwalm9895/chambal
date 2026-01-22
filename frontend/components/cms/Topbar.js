@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { FiExternalLink, FiChevronDown, FiLogOut, FiGlobe, FiMenu } from 'react-icons/fi';
-import { CmsService } from '@/lib/services/cms-service';
+import { signOut } from 'next-auth/react';
 import toast from 'react-hot-toast';
 
 export default function Topbar({ user, onSidebarToggle }) {
@@ -48,9 +48,8 @@ export default function Topbar({ user, onSidebarToggle }) {
 
   const handleLogout = async () => {
     try {
-      await CmsService.auth.logout();
+      await signOut({ callbackUrl: '/cms/login' });
       toast.success('Logged out successfully');
-      router.push('/cms/login');
     } catch (error) {
       toast.error('Error logging out');
     }

@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { CmsService } from '@/lib/services/cms-service';
+import { getMenus, createMenu, updateMenu, deleteMenu } from '@/lib/actions/menus';
+import { getCategories } from '@/lib/actions/categories';
+import { getPages } from '@/lib/actions/pages';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit, FiTrash2, FiX } from 'react-icons/fi';
 
@@ -41,17 +43,11 @@ export default function MenusPage() {
   const fetchMenus = async () => {
     try {
       setLoading(true);
-      const response = await CmsService.menus.list();
-      setMenus(Array.isArray(response) ? response : (response.results || []));
+      const data = await getMenus();
+      setMenus(data);
     } catch (error) {
       console.error('Menu fetch error:', error);
-      let errorMessage = 'Failed to load menus';
-      if (error.response?.status === 401) {
-        errorMessage = 'Authentication required. Please log in again.';
-      } else if (error.response?.status === 403) {
-        errorMessage = 'You do not have permission to view menus.';
-      }
-      toast.error(errorMessage);
+      toast.error('Failed to load menus');
     } finally {
       setLoading(false);
     }
@@ -59,45 +55,18 @@ export default function MenusPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await CmsService.categories.list();
-      console.log('Raw categories response:', response); // Debug
-      
-      // Handle different response formats
-      let cats = [];
-      if (Array.isArray(response)) {
-        cats = response;
-      } else if (response && Array.isArray(response.results)) {
-        cats = response.results;
-      } else if (response && response.data && Array.isArray(response.data)) {
-        cats = response.data;
-      } else if (response && response.data && Array.isArray(response.data.results)) {
-        cats = response.data.results;
-      }
-      
-      console.log('Categories loaded:', cats.length, cats); // Debug log
-      setCategories(cats);
-      
-      if (cats.length === 0) {
-        console.warn('No categories found. Make sure categories exist and user has permission.');
-      }
+      const data = await getCategories();
+      setCategories(data);
     } catch (error) {
       console.error('Failed to load categories:', error);
-      console.error('Error details:', error.response?.data);
-      let errorMessage = 'Failed to load categories for menu';
-      if (error.response?.status === 403) {
-        errorMessage = 'You do not have permission to view categories.';
-      } else if (error.response?.status === 401) {
-        errorMessage = 'Authentication required. Please log in again.';
-      }
-      toast.error(errorMessage);
-      setCategories([]); // Set empty array on error
+      toast.error('Failed to load categories');
     }
   };
 
   const fetchPages = async () => {
     try {
-      const response = await CmsService.pages.list();
-      setPages(Array.isArray(response) ? response : (response.results || []));
+      const data = await getPages();
+      setPages(data);
     } catch (error) {
       console.error('Failed to load pages');
     }
@@ -106,68 +75,52 @@ export default function MenusPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const submitData = {
-        title: formData.title.trim(),
-        menu_type: formData.menu_type,
-        link_type: formData.link_type,
-        order: formData.order || 0,
-        is_active: formData.is_active,
-      };
+      const data = new FormData();
+      data.append('title', formData.title.trim());
+      data.append('menu_type', formData.menu_type);
+      data.append('link_type', formData.link_type);
+      data.append('order', formData.order || 0);
+      data.append('is_active', String(formData.is_active));
 
       // Set the appropriate link based on link_type
       if (formData.link_type === 'category' && formData.category) {
-        submitData.category = parseInt(formData.category);
-        submitData.page = null;
-        submitData.external_url = null;
+        data.append('category', formData.category);
       } else if (formData.link_type === 'page' && formData.page) {
-        submitData.page = parseInt(formData.page);
-        submitData.category = null;
-        submitData.external_url = null;
+        data.append('page', formData.page);
       } else if (formData.link_type === 'url' && formData.external_url) {
-        submitData.external_url = formData.external_url.trim();
-        submitData.category = null;
-        submitData.page = null;
+        data.append('external_url', formData.external_url.trim());
       }
 
+      let result;
       if (editingMenu) {
-        await CmsService.menus.update(editingMenu.id, submitData);
-        toast.success('Menu updated successfully');
+        result = await updateMenu(editingMenu.id, {}, data);
       } else {
-        await CmsService.menus.create(submitData);
-        toast.success('Menu created successfully');
+        result = await createMenu({}, data);
       }
-      setShowForm(false);
-      setEditingMenu(null);
-      setFormData({
-        title: '',
-        menu_type: 'navbar',
-        link_type: 'category',
-        category: '',
-        page: '',
-        external_url: '',
-        order: 0,
-        is_active: true,
-      });
-      fetchMenus();
+
+      if (result.errors) {
+        Object.values(result.errors).flat().forEach(err => toast.error(err));
+      } else if (result.message && !result.message.includes('success')) {
+        toast.error(result.message);
+      } else {
+        toast.success(result.message);
+        setShowForm(false);
+        setEditingMenu(null);
+        setFormData({
+          title: '',
+          menu_type: 'navbar',
+          link_type: 'category',
+          category: '',
+          page: '',
+          external_url: '',
+          order: 0,
+          is_active: true,
+        });
+        fetchMenus();
+      }
     } catch (error) {
       console.error('Menu save error:', error);
-      let errorMessage = 'Failed to save menu';
-      if (error.response?.data) {
-        if (typeof error.response.data === 'string') {
-          errorMessage = error.response.data;
-        } else if (error.response.data.detail) {
-          errorMessage = error.response.data.detail;
-        } else if (error.response.data.message) {
-          errorMessage = error.response.data.message;
-        } else if (error.response.data.title) {
-          errorMessage = `Title error: ${Array.isArray(error.response.data.title) ? error.response.data.title[0] : error.response.data.title}`;
-        } else {
-          const firstKey = Object.keys(error.response.data)[0];
-          const firstError = error.response.data[firstKey];
-          errorMessage = `${firstKey}: ${Array.isArray(firstError) ? firstError[0] : firstError}`;
-        }
-      }
-      toast.error(errorMessage);
+      toast.error('Failed to save menu');
     }
   };
 
@@ -188,13 +141,12 @@ export default function MenusPage() {
 
   const handleDelete = async (id) => {
     if (!confirm('Are you sure you want to delete this menu item?')) return;
-    
     try {
-      await CmsService.menus.delete(id);
-      toast.success('Menu deleted');
+      await deleteMenu(id);
+      toast.success('Menu item deleted');
       fetchMenus();
     } catch (error) {
-      toast.error('Failed to delete menu');
+      toast.error('Failed to delete menu item');
     }
   };
 

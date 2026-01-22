@@ -1,20 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CmsService } from '@/lib/services/cms-service';
+import { getCategories, createCategory, updateCategory, deleteCategory } from '@/lib/actions/categories';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit, FiTrash2, FiCheckCircle, FiX } from 'react-icons/fi';
 import { format } from 'date-fns';
+import { useSession } from 'next-auth/react';
 
 export default function CategoriesPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [user, setUser] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -26,45 +26,16 @@ export default function CategoriesPage() {
 
   useEffect(() => {
     fetchCategories();
-    // Get current user to check permissions
-    if (typeof window !== 'undefined') {
-      try {
-        const userStr = localStorage.getItem('user');
-        if (userStr) {
-          setUser(JSON.parse(userStr));
-        }
-      } catch (e) {
-        console.error('Error parsing user:', e);
-      }
-    }
   }, []);
 
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await CmsService.categories.list();
-      setCategories(Array.isArray(response) ? response : (response.results || []));
+      const data = await getCategories();
+      setCategories(data);
     } catch (error) {
       console.error('Category fetch error:', error);
-      let errorMessage = 'Failed to load categories';
-      if (error.response) {
-        if (error.response.status === 401) {
-          errorMessage = 'Authentication required. Please log in again.';
-        } else if (error.response.status === 403) {
-          errorMessage = 'You do not have permission to view categories.';
-        } else if (error.response.data) {
-          if (typeof error.response.data === 'string') {
-            errorMessage = error.response.data;
-          } else if (error.response.data.detail) {
-            errorMessage = error.response.data.detail;
-          } else if (error.response.data.message) {
-            errorMessage = error.response.data.message;
-          }
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      toast.error(errorMessage);
+      toast.error('Failed to load categories');
     } finally {
       setLoading(false);
     }
@@ -73,27 +44,39 @@ export default function CategoriesPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Prepare data - remove empty slug to let backend generate it
-      const submitData = {
-        name: formData.name.trim(),
-        language: formData.language,
-        show_in_menu: formData.show_in_menu,
-        menu_order: formData.menu_order || 0,
-        is_active: formData.is_active,
-      };
-      
-      // Only include slug if it's provided and not empty
+      const data = new FormData();
+      data.append('name', formData.name.trim());
       if (formData.slug && formData.slug.trim()) {
-        submitData.slug = formData.slug.trim();
+        data.append('slug', formData.slug.trim());
       }
+      data.append('language', formData.language);
+      data.append('show_in_menu', formData.show_in_menu.toString());
+      data.append('menu_order', (formData.menu_order || 0).toString());
+      data.append('is_active', formData.is_active.toString());
       
+      let result;
       if (editingCategory) {
-        await CmsService.categories.update(editingCategory.id, submitData);
-        toast.success('Category updated successfully');
+        result = await updateCategory(editingCategory.id, {}, data);
       } else {
-        await CmsService.categories.create(submitData);
-        toast.success('Category created successfully');
+        result = await createCategory({}, data);
       }
+
+      if (result.errors) {
+        // Show validation errors
+        Object.values(result.errors).flat().forEach(err => toast.error(err));
+        return;
+      }
+
+      if (result.message && !result.message.includes('successfully')) {
+          toast.error(result.message);
+          return;
+      }
+
+      toast.success(result.message);
+      
+      // Refresh list
+      fetchCategories();
+
       setShowForm(false);
       setEditingCategory(null);
       setFormData({
@@ -104,33 +87,9 @@ export default function CategoriesPage() {
         menu_order: 0,
         is_active: true,
       });
-      fetchCategories();
     } catch (error) {
-      console.error('Category save error:', error);
-      let errorMessage = 'Failed to save category';
-      if (error.response?.data) {
-        if (typeof error.response.data === 'string') {
-          errorMessage = error.response.data;
-        } else if (error.response.data.detail) {
-          errorMessage = error.response.data.detail;
-        } else if (error.response.data.message) {
-          errorMessage = error.response.data.message;
-        } else if (error.response.data.slug) {
-          errorMessage = `Slug error: ${Array.isArray(error.response.data.slug) ? error.response.data.slug[0] : error.response.data.slug}`;
-        } else if (error.response.data.name) {
-          errorMessage = `Name error: ${Array.isArray(error.response.data.name) ? error.response.data.name[0] : error.response.data.name}`;
-        } else if (error.response.data.language) {
-          errorMessage = `Language error: ${Array.isArray(error.response.data.language) ? error.response.data.language[0] : error.response.data.language}`;
-        } else {
-          // Try to get first error message
-          const firstKey = Object.keys(error.response.data)[0];
-          const firstError = error.response.data[firstKey];
-          errorMessage = `${firstKey}: ${Array.isArray(firstError) ? firstError[0] : firstError}`;
-        }
-      } else if (error.message) {
-        errorMessage = error.message;
-      }
-      toast.error(errorMessage);
+      console.error('Save error:', error);
+      toast.error('Failed to save category');
     }
   };
 
@@ -140,40 +99,25 @@ export default function CategoriesPage() {
       name: category.name,
       slug: category.slug,
       language: category.language,
-      show_in_menu: category.show_in_menu,
-      menu_order: category.menu_order,
-      is_active: category.is_active,
+      show_in_menu: category.showInMenu, // Note: Prisma uses camelCase
+      menu_order: category.menuOrder,     // Prisma uses camelCase
+      is_active: category.isActive,       // Prisma uses camelCase
     });
     setShowForm(true);
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this category?')) return;
-    
-    try {
-      await categoryApi.delete(id);
-      toast.success('Category deleted');
-      fetchCategories();
-    } catch (error) {
-      console.error('Category delete error:', error);
-      let errorMessage = 'Failed to delete category';
-      if (error.response?.status === 403) {
-        errorMessage = 'You do not have permission to delete categories. Only admins and editors can delete.';
-      } else if (error.response?.data) {
-        if (typeof error.response.data === 'string') {
-          errorMessage = error.response.data;
-        } else if (error.response.data.detail) {
-          errorMessage = error.response.data.detail;
-        } else if (error.response.data.message) {
-          errorMessage = error.response.data.message;
-        }
+    if (window.confirm('Are you sure you want to delete this category?')) {
+      try {
+        await deleteCategory(id);
+        toast.success('Category deleted successfully');
+        fetchCategories();
+      } catch (error) {
+        console.error('Delete error:', error);
+        toast.error('Failed to delete category');
       }
-      toast.error(errorMessage);
     }
   };
-
-  // Check if user can edit/delete categories (admin or editor only)
-  const canModifyCategories = user && (user.role === 'admin' || user.role === 'editor');
 
   const handleCancel = () => {
     setShowForm(false);
@@ -188,263 +132,213 @@ export default function CategoriesPage() {
     });
   };
 
-  const getLanguageBadge = (language) => {
-    const colors = {
-      en: 'bg-blue-100 text-blue-800',
-      hi: 'bg-orange-100 text-orange-800',
-    };
+  if (loading && !categories.length) {
     return (
-      <span className={`px-2 py-1 text-xs font-medium rounded-full ${colors[language] || colors.en}`}>
-        {language.toUpperCase()}
-      </span>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+      </div>
     );
-  };
+  }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
-        {!showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center space-x-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            <FiPlus className="w-5 h-5" />
-            <span>Add Category</span>
-          </button>
-        )}
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
+        <button
+          onClick={() => setShowForm(true)}
+          className="flex items-center px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700 transition-colors"
+        >
+          <FiPlus className="mr-2" />
+          Add Category
+        </button>
       </div>
-      
-      {user && !canModifyCategories && (
-        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <p className="text-sm text-blue-800">
-            <strong>Note:</strong> As a writer, you can view and create categories. Only admins and editors can edit or delete categories.
-          </p>
-        </div>
-      )}
 
+      {/* Form Modal/Overlay */}
       {showForm && (
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900">
-              {editingCategory ? 'Edit Category' : 'Add New Category'}
-            </h2>
-            <button
-              onClick={handleCancel}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              <FiX className="w-5 h-5" />
-            </button>
-          </div>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+              <h3 className="text-lg font-medium text-gray-900">
+                {editingCategory ? 'Edit Category' : 'New Category'}
+              </h3>
+              <button onClick={handleCancel} className="text-gray-400 hover:text-gray-500">
+                <FiX size={24} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Name *
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Name</label>
                 <input
                   type="text"
                   required
                   value={formData.name}
-                  onChange={(e) => {
-                    setFormData({ ...formData, name: e.target.value });
-                    if (!editingCategory && !formData.slug) {
-                      setFormData({ 
-                        ...formData, 
-                        name: e.target.value,
-                        slug: e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-                      });
-                    }
-                  }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="Category name"
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Slug
+                <label className="block text-sm font-medium text-gray-700">
+                  Slug (Optional)
                 </label>
                 <input
                   type="text"
                   value={formData.slug}
                   onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-                  placeholder="category-slug"
+                  placeholder="Leave empty to auto-generate"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 />
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Language *
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Language</label>
                 <select
-                  required
                   value={formData.language}
                   onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 >
                   <option value="en">English</option>
                   <option value="hi">Hindi</option>
                 </select>
               </div>
+
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Menu Order
-                </label>
+                <label className="block text-sm font-medium text-gray-700">Menu Order</label>
                 <input
                   type="number"
                   min="0"
                   value={formData.menu_order}
                   onChange={(e) => setFormData({ ...formData, menu_order: parseInt(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
                 />
               </div>
-            </div>
-            <div className="flex items-center space-x-6">
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.show_in_menu}
-                  onChange={(e) => setFormData({ ...formData, show_in_menu: e.target.checked })}
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Show in Menu</span>
-              </label>
-              <label className="flex items-center space-x-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formData.is_active}
-                  onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
-                  className="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
-                />
-                <span className="text-sm font-medium text-gray-700">Active</span>
-              </label>
-            </div>
-            <div className="flex items-center space-x-3 pt-4">
-              <button
-                type="submit"
-                className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-              >
-                {editingCategory ? 'Update Category' : 'Create Category'}
-              </button>
-              <button
-                type="button"
-                onClick={handleCancel}
-                className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
-      {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-        </div>
-      ) : (
-        <>
-          <div className="bg-white rounded-lg shadow overflow-hidden">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Name
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Slug
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Language
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Menu Order
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Posts Count
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {categories.map((category) => (
-                  <tr key={category.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-gray-900">{category.name}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {category.slug}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {getLanguageBadge(category.language)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {category.menu_order}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {category.posts_count || 0}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center space-x-2">
-                        {category.is_active ? (
-                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                            Active
-                          </span>
-                        ) : (
-                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">
-                            Inactive
-                          </span>
-                        )}
-                        {category.show_in_menu && (
-                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
-                            Menu
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <div className="flex items-center space-x-2">
-                        {canModifyCategories && (
-                          <>
-                            <button
-                              onClick={() => handleEdit(category)}
-                              className="text-primary-600 hover:text-primary-900"
-                              title="Edit"
-                            >
-                              <FiEdit className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(category.id)}
-                              className="text-red-600 hover:text-red-900"
-                              title="Delete"
-                            >
-                              <FiTrash2 className="w-4 h-4" />
-                            </button>
-                          </>
-                        )}
-                        {!canModifyCategories && (
-                          <span className="text-xs text-gray-400">View only</span>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
+                  <input
+                    id="show_in_menu"
+                    type="checkbox"
+                    checked={formData.show_in_menu}
+                    onChange={(e) => setFormData({ ...formData, show_in_menu: e.target.checked })}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="show_in_menu" className="ml-2 block text-sm text-gray-900">
+                    Show in Menu
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    id="is_active"
+                    type="checkbox"
+                    checked={formData.is_active}
+                    onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
+                    className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="is_active" className="ml-2 block text-sm text-gray-900">
+                    Active
+                  </label>
+                </div>
+              </div>
+
+              <div className="mt-5 sm:mt-6 flex gap-3">
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="flex-1 inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary-600 text-base font-medium text-white hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:text-sm"
+                >
+                  {editingCategory ? 'Update' : 'Create'}
+                </button>
+              </div>
+            </form>
           </div>
-
-          {categories.length === 0 && (
-            <div className="text-center py-12 bg-white rounded-lg shadow">
-              <p className="text-gray-500">No categories found. Create your first category!</p>
-            </div>
-          )}
-        </>
+        </div>
       )}
+
+      {/* Categories Table */}
+      <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Slug
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Language
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Menu Order
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th scope="col" className="relative px-6 py-3">
+                <span className="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {categories.map((category) => (
+              <tr key={category.id}>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm font-medium text-gray-900">{category.name}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <div className="text-sm text-gray-500">{category.slug}</div>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                    category.language === 'en' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                  }`}>
+                    {category.language === 'en' ? 'English' : 'Hindi'}
+                  </span>
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  {category.menuOrder}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {category.isActive ? (
+                    <FiCheckCircle className="text-green-500" />
+                  ) : (
+                    <FiX className="text-red-500" />
+                  )}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button
+                    onClick={() => handleEdit(category)}
+                    className="text-primary-600 hover:text-primary-900 mr-4"
+                  >
+                    <FiEdit className="inline" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(category.id)}
+                    className="text-red-600 hover:text-red-900"
+                  >
+                    <FiTrash2 className="inline" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {categories.length === 0 && (
+               <tr>
+                 <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500">
+                   No categories found. Create one to get started.
+                 </td>
+               </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

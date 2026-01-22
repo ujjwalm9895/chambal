@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { PublicService } from '@/lib/services/public-service';
+import { getPublicArticles } from '@/lib/actions/public';
 
 export default function ArticlesPage() {
   const [articles, setArticles] = useState([]);
@@ -15,7 +15,7 @@ export default function ArticlesPage() {
     const fetchArticles = async () => {
       try {
         console.log('Fetching articles...');
-        const data = await PublicService.getArticles();
+        const data = await getPublicArticles();
         console.log('Raw API response:', data);
         // Handle paginated response (DRF returns {results: [], count: N, ...})
         const articleList = Array.isArray(data) ? data : (data?.results || []);

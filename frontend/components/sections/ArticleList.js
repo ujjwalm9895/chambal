@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { PublicService } from '@/lib/services/public-service';
+import { getPublicArticles } from '@/lib/actions/public';
 
 export default function ArticleList({ data, sliderMode = false }) {
   const [articles, setArticles] = useState(data?.articles || []);
@@ -28,7 +28,7 @@ export default function ArticleList({ data, sliderMode = false }) {
       if (data?.limit) params.limit = data.limit;
       if (data?.lang) params.lang = data.lang;
 
-      const response = await PublicService.getArticles(params);
+      const response = await getPublicArticles(params);
       setArticles(response?.results || response || []);
     } catch (error) {
       console.error('Error fetching articles:', error);

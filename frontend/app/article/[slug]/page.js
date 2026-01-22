@@ -1,12 +1,12 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { PublicService } from '@/lib/services/public-service';
+import { getPublicArticle } from '@/lib/actions/public';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }) {
   try {
-    const article = await PublicService.getArticle(params.slug);
+    const article = await getPublicArticle(params.slug);
     
     return {
       title: article?.seo_title || article?.title,
@@ -29,7 +29,7 @@ export default async function ArticlePage({ params }) {
   let article;
   
   try {
-    article = await PublicService.getArticle(params.slug);
+    article = await getPublicArticle(params.slug);
   } catch (error) {
     notFound();
   }

@@ -7,7 +7,7 @@ const nextConfig = {
 
   images: {
     unoptimized: true,
-    domains: ["localhost", "127.0.0.1"],
+    domains: ["localhost", "127.0.0.1", "storage.googleapis.com"],
     remotePatterns: [
       {
         protocol: "http",
@@ -17,13 +17,16 @@ const nextConfig = {
         protocol: "http",
         hostname: "127.0.0.1",
       },
+      {
+        protocol: "https",
+        hostname: "storage.googleapis.com",
+      },
     ],
   },
 
   // ✅ use NEXT_PUBLIC_ for frontend
   env: {
-    NEXT_PUBLIC_API_BASE_URL:
-      process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:8000/api",
+    // NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:3000", // Not needed with Server Actions
   },
 
   // ✅ Explicitly configure Webpack aliases to prevent "Module not found" in Docker

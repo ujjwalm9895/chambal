@@ -1,12 +1,12 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SectionRenderer from '@/components/sections/SectionRenderer';
-import { PublicService } from '@/lib/services/public-service';
+import { getPublicCategory } from '@/lib/actions/public';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }) {
   try {
-    const category = await PublicService.getCategory(params.slug);
+    const category = await getPublicCategory(params.slug);
     
     return {
       title: `${category?.name || 'Category'} - Chambal Sandesh`,
@@ -23,7 +23,7 @@ export default async function CategoryPage({ params, searchParams }) {
   let category;
   
   try {
-    category = await PublicService.getCategory(params.slug);
+    category = await getPublicCategory(params.slug);
     if (!category) {
       notFound();
     }

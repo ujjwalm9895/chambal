@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CmsService } from '@/lib/services/cms-service';
+import { authenticate } from '@/lib/actions';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -17,19 +17,19 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
+    const form = new FormData();
+    form.append('username', formData.username);
+    form.append('password', formData.password);
+
     try {
-      const response = await CmsService.auth.login(formData.username, formData.password);
+      const errorMessage = await authenticate(undefined, form);
       
-      // Store tokens and user data
-      localStorage.setItem('access_token', response.access);
-      localStorage.setItem('refresh_token', response.refresh);
-      localStorage.setItem('user', JSON.stringify(response.user));
-      
-      toast.success('Logged in successfully');
-      router.push('/cms');
+      if (errorMessage) {
+        toast.error(errorMessage);
+        setLoading(false);
+      }
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Invalid credentials');
-    } finally {
+      // toast.error('An error occurred');
       setLoading(false);
     }
   };

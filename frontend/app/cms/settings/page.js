@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { CmsService } from '@/lib/services/cms-service';
+import { getSettings, updateSettings } from '@/lib/actions/settings';
 import toast from 'react-hot-toast';
 import { FiSave, FiUpload, FiX } from 'react-icons/fi';
 
@@ -44,33 +44,33 @@ export default function SettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const settings = await CmsService.settings.get();
+      const settings = await getSettings();
       
       setFormData({
-        site_name: settings.site_name || '',
-        site_tagline: settings.site_tagline || '',
-        contact_email: settings.contact_email || '',
-        contact_phone: settings.contact_phone || '',
-        contact_address: settings.contact_address || '',
-        facebook_url: settings.facebook_url || '',
-        twitter_url: settings.twitter_url || '',
-        instagram_url: settings.instagram_url || '',
-        youtube_url: settings.youtube_url || '',
-        linkedin_url: settings.linkedin_url || '',
-        default_seo_title: settings.default_seo_title || '',
-        default_seo_description: settings.default_seo_description || '',
-        default_seo_keywords: settings.default_seo_keywords || '',
-        posts_per_page: settings.posts_per_page || 20,
-        enable_comments: settings.enable_comments || false,
-        enable_registration: settings.enable_registration || false,
-        maintenance_mode: settings.maintenance_mode || false,
-        maintenance_message: settings.maintenance_message || '',
-        google_analytics_id: settings.google_analytics_id || '',
-        facebook_pixel_id: settings.facebook_pixel_id || '',
+        site_name: settings.siteName || '',
+        site_tagline: settings.siteTagline || '',
+        contact_email: settings.contactEmail || '',
+        contact_phone: settings.contactPhone || '',
+        contact_address: settings.contactAddress || '',
+        facebook_url: settings.facebookUrl || '',
+        twitter_url: settings.twitterUrl || '',
+        instagram_url: settings.instagramUrl || '',
+        youtube_url: settings.youtubeUrl || '',
+        linkedin_url: settings.linkedinUrl || '',
+        default_seo_title: settings.defaultSeoTitle || '',
+        default_seo_description: settings.defaultSeoDescription || '',
+        default_seo_keywords: settings.defaultSeoKeywords || '',
+        posts_per_page: settings.postsPerPage || 20,
+        enable_comments: settings.enableComments || false,
+        enable_registration: settings.enableRegistration || false,
+        maintenance_mode: settings.maintenanceMode || false,
+        maintenance_message: settings.maintenanceMessage || '',
+        google_analytics_id: settings.googleAnalyticsId || '',
+        facebook_pixel_id: settings.facebookPixelId || '',
       });
       
-      setSiteLogoUrl(settings.site_logo_url || null);
-      setSiteFaviconUrl(settings.site_favicon_url || null);
+      setSiteLogoUrl(settings.siteLogo || null);
+      setSiteFaviconUrl(settings.siteFavicon || null);
     } catch (error) {
       console.error('Settings fetch error:', error);
       toast.error('Failed to load settings');
@@ -128,31 +128,13 @@ export default function SettingsPage() {
         submitData.append('site_favicon', faviconFile);
       }
       
-      await CmsService.settings.update(submitData);
+      const result = await updateSettings(submitData);
       
-      toast.success('Settings saved successfully');
+      toast.success(result.message || 'Settings saved successfully');
       fetchSettings(); // Reload to get updated URLs
     } catch (error) {
       console.error('Settings save error:', error);
-      let errorMessage = 'Failed to save settings';
-      if (error.response?.data) {
-        if (typeof error.response.data === 'string') {
-          errorMessage = error.response.data;
-        } else if (error.response.data.detail) {
-          errorMessage = error.response.data.detail;
-        } else {
-          // Handle field-specific errors
-          const fieldErrors = Object.keys(error.response.data).map(
-            field => `${field}: ${Array.isArray(error.response.data[field]) 
-              ? error.response.data[field][0] 
-              : error.response.data[field]}`
-          ).join(', ');
-          if (fieldErrors) {
-            errorMessage = fieldErrors;
-          }
-        }
-      }
-      toast.error(errorMessage);
+      toast.error('Failed to save settings');
     } finally {
       setSaving(false);
     }

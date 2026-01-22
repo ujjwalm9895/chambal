@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { PublicService } from '@/lib/services/public-service';
+import { getPublicMenus } from '@/lib/actions/public';
 
 export default function Navbar() {
   const [menus, setMenus] = useState([]);
@@ -14,7 +14,7 @@ export default function Navbar() {
 
   const fetchMenus = async () => {
     try {
-      const data = await PublicService.getMenus('navbar');
+      const data = await getPublicMenus('navbar');
       setMenus(data?.results || data || []);
       setLoading(false);
     } catch (error) {

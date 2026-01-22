@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { CmsService } from '@/lib/services/cms-service';
+import { getPages, getPage } from '@/lib/actions/pages';
+import { getPageSections, createPageSection, updatePageSection, deletePageSection } from '@/lib/actions/page-sections';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit, FiTrash2, FiX, FiArrowUp, FiArrowDown, FiArrowLeft } from 'react-icons/fi';
 
@@ -32,8 +33,7 @@ export default function HomepageBuilderPage() {
     try {
       setLoading(true);
       // Fetch all pages
-      const pagesResponse = await CmsService.pages.list();
-      const pages = Array.isArray(pagesResponse) ? pagesResponse : (pagesResponse.results || []);
+      const pages = await getPages();
       setAllPages(pages);
       
       // Determine which page to load
@@ -50,22 +50,13 @@ export default function HomepageBuilderPage() {
         setCurrentPage(targetPage);
         setFormData(prev => ({ ...prev, page: targetPage.id }));
         
-        // Fetch full page details with sections
+        // Fetch sections
         try {
-          const pageDetail = await CmsService.pages.get(targetPage.id);
-          if (pageDetail.sections && pageDetail.sections.length > 0) {
-            setSections(pageDetail.sections.sort((a, b) => a.order - b.order));
-          } else {
-            // Fetch sections separately
-            const sectionsResponse = await CmsService.pageSections.list({ page: targetPage.id });
-            const sectionsList = Array.isArray(sectionsResponse) ? sectionsResponse : (sectionsResponse.results || []);
-            setSections(sectionsList.sort((a, b) => a.order - b.order));
-          }
-        } catch (error) {
-          // If page detail doesn't include sections, fetch separately
-          const sectionsResponse = await CmsService.pageSections.list({ page: targetPage.id });
-          const sectionsList = Array.isArray(sectionsResponse) ? sectionsResponse : (sectionsResponse.results || []);
+          const sectionsList = await getPageSections(targetPage.id);
           setSections(sectionsList.sort((a, b) => a.order - b.order));
+        } catch (error) {
+          console.error('Failed to load sections:', error);
+          setSections([]);
         }
       } else if (pages.length > 0) {
         // If no target page found but pages exist, use first page or show message
@@ -132,11 +123,11 @@ export default function HomepageBuilderPage() {
   const handleEditSection = (section) => {
     setEditingSection(section);
     setFormData({
-      page: section.page || currentPage?.id,
-      section_type: section.section_type,
-      data: section.data || getDefaultData(section.section_type),
+      page: section.pageId || currentPage?.id, // Note: Prisma returns pageId
+      section_type: section.sectionType, // Note: Prisma returns camelCase
+      data: section.data || getDefaultData(section.sectionType),
       order: section.order || 0,
-      is_active: section.is_active !== undefined ? section.is_active : true,
+      is_active: section.isActive, // Note: Prisma returns camelCase
     });
     setShowForm(true);
   };
@@ -148,38 +139,33 @@ export default function HomepageBuilderPage() {
       return;
     }
     try {
-      const submitData = {
-        page: currentPage.id,
-        section_type: formData.section_type,
-        data: formData.data,
-        order: parseInt(formData.order) || 0,
-        is_active: formData.is_active,
-      };
+      const data = new FormData();
+      data.append('page', currentPage.id);
+      data.append('section_type', formData.section_type);
+      data.append('data', JSON.stringify(formData.data));
+      data.append('order', parseInt(formData.order) || 0);
+      data.append('is_active', String(formData.is_active));
 
+      let result;
       if (editingSection) {
-        await CmsService.pageSections.update(editingSection.id, submitData);
-        toast.success('Section updated successfully');
+        result = await updatePageSection(editingSection.id, {}, data);
       } else {
-        await CmsService.pageSections.create(submitData);
-        toast.success('Section created successfully');
+        result = await createPageSection({}, data);
       }
-      
-      setShowForm(false);
-      setEditingSection(null);
-      fetchPagesAndSections();
+
+      if (result.errors) {
+        Object.values(result.errors).flat().forEach(err => toast.error(err));
+      } else if (result.message && !result.message.includes('success')) {
+        toast.error(result.message);
+      } else {
+        toast.success(result.message);
+        setShowForm(false);
+        setEditingSection(null);
+        fetchPagesAndSections();
+      }
     } catch (error) {
       console.error('Section save error:', error);
-      let errorMessage = 'Failed to save section';
-      if (error.response?.data) {
-        if (typeof error.response.data === 'string') {
-          errorMessage = error.response.data;
-        } else if (error.response.data.detail) {
-          errorMessage = error.response.data.detail;
-        } else if (error.response.data.message) {
-          errorMessage = error.response.data.message;
-        }
-      }
-      toast.error(errorMessage);
+      toast.error('Failed to save section');
     }
   };
 
@@ -187,7 +173,7 @@ export default function HomepageBuilderPage() {
     if (!confirm('Are you sure you want to delete this section?')) return;
     
     try {
-      await CmsService.pageSections.delete(id);
+      await deletePageSection(id);
       toast.success('Section deleted');
       fetchPagesAndSections();
     } catch (error) {
@@ -209,8 +195,13 @@ export default function HomepageBuilderPage() {
 
     try {
       // Swap orders
-      await CmsService.pageSections.update(sectionId, { order: newOrder });
-      await CmsService.pageSections.update(targetSection.id, { order: section.order });
+      const formData1 = new FormData();
+      formData1.append('order', newOrder);
+      await updatePageSection(sectionId, {}, formData1);
+      
+      const formData2 = new FormData();
+      formData2.append('order', section.order);
+      await updatePageSection(targetSection.id, {}, formData2);
       toast.success('Section order updated');
       fetchPagesAndSections();
     } catch (error) {

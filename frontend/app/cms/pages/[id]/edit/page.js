@@ -3,14 +3,15 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { CmsService } from '@/lib/services/cms-service';
+import { getPage, createPage, updatePage } from '@/lib/actions/pages';
 import toast from 'react-hot-toast';
 import { FiX, FiSave, FiLayout } from 'react-icons/fi';
+import { slugify } from '@/lib/utils';
 
 export default function PageEditPage() {
   const router = useRouter();
   const params = useParams();
-  const pageId = params.id === 'new' ? null : params.id;
+  const pageId = params.id === 'new' ? null : parseInt(params.id);
   const [loading, setLoading] = useState(!!pageId);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,30 +28,24 @@ export default function PageEditPage() {
     }
   }, [pageId]);
 
-  const slugify = (text) => {
-    return text
-      .toString()
-      .toLowerCase()
-      .trim()
-      .replace(/\s+/g, '-')
-      .replace(/[^\w\-]+/g, '')
-      .replace(/\-\-+/g, '-')
-      .replace(/^-+/, '')
-      .replace(/-+$/, '');
-  };
-
   const fetchPage = async () => {
     try {
       setLoading(true);
-      const page = await CmsService.pages.get(pageId);
+      const page = await getPage(pageId);
+      if (!page) {
+          toast.error('Page not found');
+          router.push('/cms/pages');
+          return;
+      }
       setFormData({
         title: page.title || '',
         slug: page.slug || '',
-        seo_title: page.seo_title || '',
-        seo_description: page.seo_description || '',
-        is_active: page.is_active !== undefined ? page.is_active : true,
+        seo_title: page.seoTitle || '',
+        seo_description: page.seoDescription || '',
+        is_active: page.isActive,
       });
     } catch (error) {
+      console.error('Fetch page error:', error);
       toast.error('Failed to load page');
       router.push('/cms/pages');
     } finally {
@@ -63,60 +58,41 @@ export default function PageEditPage() {
     setSaving(true);
 
     try {
-      const data = { ...formData };
+      const data = new FormData();
+      data.append('title', formData.title.trim());
+      if (formData.slug && formData.slug.trim()) {
+          data.append('slug', formData.slug.trim());
+      }
+      if (formData.seo_title && formData.seo_title.trim()) {
+          data.append('seo_title', formData.seo_title.trim());
+      }
+      if (formData.seo_description && formData.seo_description.trim()) {
+          data.append('seo_description', formData.seo_description.trim());
+      }
+      data.append('is_active', String(formData.is_active));
 
-      // Clean up data for submission
-      if (!data.slug || data.slug.trim() === '') {
-        delete data.slug;
-      } else {
-        data.slug = data.slug.trim();
-      }
-      if (!data.seo_title || data.seo_title.trim() === '') {
-        data.seo_title = null;
-      } else {
-        data.seo_title = data.seo_title.trim();
-      }
-      if (!data.seo_description || data.seo_description.trim() === '') {
-        data.seo_description = null;
-      } else {
-        data.seo_description = data.seo_description.trim();
-      }
-
-      let savedPage;
+      let result;
       if (pageId) {
-        savedPage = await CmsService.pages.update(pageId, data);
-        toast.success('Page updated successfully');
-        // Stay on edit page after update
+        result = await updatePage(pageId, {}, data);
       } else {
-        savedPage = await CmsService.pages.create(data);
-        toast.success('Page created successfully');
-        // Redirect to edit page of newly created page so user can continue editing (add sections, etc.)
-        if (savedPage && savedPage.id) {
-          router.push(`/cms/pages/${savedPage.id}/edit`);
-          return; // Exit early to prevent further navigation
+        result = await createPage({}, data);
+      }
+
+      if (result.errors) {
+        Object.values(result.errors).flat().forEach(err => toast.error(err));
+      } else if (result.message && !result.message.includes('success')) {
+        toast.error(result.message);
+      } else {
+        toast.success(result.message);
+        
+        if (!pageId && result.id) {
+           // Redirect to edit page of newly created page
+           router.push(`/cms/pages/${result.id}/edit`);
         }
       }
     } catch (error) {
       console.error('Page save error:', error);
-      let errorMessage = 'Failed to save page';
-      if (error.response?.data) {
-        if (typeof error.response.data === 'string') {
-          errorMessage = error.response.data;
-        } else if (error.response.data.detail) {
-          errorMessage = error.response.data.detail;
-        } else if (error.response.data.message) {
-          errorMessage = error.response.data.message;
-        } else if (error.response.data.title) {
-          errorMessage = `Title: ${error.response.data.title[0]}`;
-        } else if (error.response.data.slug) {
-          errorMessage = `Slug: ${error.response.data.slug[0]}`;
-        } else {
-          const firstKey = Object.keys(error.response.data)[0];
-          const firstError = error.response.data[firstKey];
-          errorMessage = `${firstKey}: ${Array.isArray(firstError) ? firstError[0] : firstError}`;
-        }
-      }
-      toast.error(errorMessage);
+      toast.error('Failed to save page');
     } finally {
       setSaving(false);
     }

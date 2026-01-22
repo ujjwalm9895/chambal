@@ -1,12 +1,12 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SectionRenderer from '@/components/sections/SectionRenderer';
-import { PublicService } from '@/lib/services/public-service';
+import { getPublicPage } from '@/lib/actions/public';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }) {
   try {
-    const page = await PublicService.getPage(params.slug);
+    const page = await getPublicPage(params.slug);
     
     return {
       title: page?.seo_title || page?.title,
@@ -23,7 +23,7 @@ export default async function CustomPage({ params }) {
   let page;
   
   try {
-    page = await PublicService.getPage(params.slug);
+    page = await getPublicPage(params.slug);
   } catch (error) {
     notFound();
   }

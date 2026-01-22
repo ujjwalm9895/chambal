@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { PublicService } from '@/lib/services/public-service';
+import { getPublicMenus } from '@/lib/actions/public';
 
 export default function Footer() {
   const [menus, setMenus] = useState([]);
@@ -14,7 +14,7 @@ export default function Footer() {
 
   const fetchMenus = async () => {
     try {
-      const data = await PublicService.getMenus('footer');
+      const data = await getPublicMenus('footer');
       setMenus(data?.results || data || []);
       setLoading(false);
     } catch (error) {

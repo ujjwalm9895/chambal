@@ -1,7 +1,7 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SectionRenderer from '@/components/sections/SectionRenderer';
-import { PublicService } from '@/lib/services/public-service';
+import { getPublicHomepage } from '@/lib/actions/public';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +17,7 @@ export const metadata = {
 
 async function getHomepageData() {
   try {
-    const data = await PublicService.getHomepage();
+    const data = await getPublicHomepage();
     console.log('Homepage data fetched successfully:', data ? 'Has data' : 'No data');
     return data;
   } catch (error) {

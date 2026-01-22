@@ -1,4 +1,7 @@
 steps:
+  # =========================
+  # 1. Setup Artifact Registry
+  # =========================
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: bash
     args:
@@ -7,51 +10,39 @@ steps:
         gcloud artifacts repositories describe ${_AR_REPO} --location=${_REGION}
         || gcloud artifacts repositories create ${_AR_REPO} --repository-format=docker --location=${_REGION};
         gcloud auth configure-docker ${_REGION}-docker.pkg.dev --quiet
+
   # =========================
-  # Build Backend (Django)
+  # 2. Build Next.js App (Unified)
   # =========================
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
       - '-t'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-backend'
-      - './backend'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-cms'
+      - '-f'
+      - 'Dockerfile'
+      - '.'
+    dir: 'frontend'
 
-  # Push Backend
+  # =========================
+  # 3. Push Image
+  # =========================
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'push'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-backend'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-cms'
 
   # =========================
-  # Build Frontend (Next.js)
-  # =========================
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'build'
-      - '--build-arg'
-      - 'NEXT_PUBLIC_API_BASE_URL=${_NEXT_PUBLIC_API_BASE_URL}'
-      - '-t'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-frontend'
-      - './frontend'
-
-  # Push Frontend
-  - name: 'gcr.io/cloud-builders/docker'
-    args:
-      - 'push'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-frontend'
-
-  # =========================
-  # Deploy Backend (Cloud Run)
+  # 4. Deploy to Cloud Run
   # =========================
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
       - 'run'
       - 'deploy'
-      - 'chambal-backend'
+      - 'chambal-cms'
       - '--image'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-backend'
+      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-cms'
       - '--region'
       - '${_REGION}'
       - '--platform'
@@ -60,32 +51,11 @@ steps:
       - '--add-cloudsql-instances'
       - '${_CLOUD_SQL_INSTANCE}'
       - '--set-env-vars'
-      - >
-        DEBUG=False,
-        DB_HOST=/cloudsql/${_CLOUD_SQL_INSTANCE},
-        DB_NAME=${_DB_NAME},
-        DB_USER=${_DB_USER},
-        DB_PASSWORD=${_DB_PASSWORD},
-        GS_BUCKET_NAME=${_GS_BUCKET_NAME}
-
-  # =========================
-  # Deploy Frontend (Cloud Run)
-  # =========================
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
-    args:
-      - 'run'
-      - 'deploy'
-      - 'chambal-frontend'
-      - '--image'
-      - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-frontend'
-      - '--region'
-      - '${_REGION}'
-      - '--platform'
-      - 'managed'
-      - '--allow-unauthenticated'
+      - 'NODE_ENV=production'
       - '--set-env-vars'
-      - 'NEXT_PUBLIC_API_BASE_URL=${_NEXT_PUBLIC_API_BASE_URL}'
+      - 'DATABASE_URL=mysql://${_DB_USER}:${_DB_PASSWORD}@localhost/${_DB_NAME}?socket=/cloudsql/${_CLOUD_SQL_INSTANCE}'
+      - '--set-secrets'
+      - 'AUTH_SECRET=AUTH_SECRET:latest,AUTH_URL=AUTH_URL:latest'
 
 # =========================
 # Substitution Variables
@@ -96,19 +66,17 @@ substitutions:
   _CLOUD_SQL_INSTANCE: chambal-485109:asia-south2:chambal-db-instance
   _DB_NAME: chambal
   _DB_USER: chambal
-  _DB_PASSWORD: ',SigC*P"gX1"Z>IY'
-  _GS_BUCKET_NAME: chambal-sandesh-media-prod
-  _NEXT_PUBLIC_API_BASE_URL: https://api.news.invitevista.com/api
+  _DB_PASSWORD: ',SigC*P\"gX1\"Z>IY'' # Quoted to handle special chars
+  # Note: API_BASE_URL is removed as we are now Server Actions (Internal)
 
 # =========================
-# Built Images
+# Images to Track
 # =========================
 images:
-  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-backend'
-  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-frontend'
+  - '${_REGION}-docker.pkg.dev/$PROJECT_ID/${_AR_REPO}/chambal-cms'
 
 # =========================
-# Logging Fix (Required)
+# Options
 # =========================
 options:
   logging: CLOUD_LOGGING_ONLY

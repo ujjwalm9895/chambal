@@ -3,7 +3,8 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CmsService } from '@/lib/services/cms-service';
+import { bulkUploadPosts } from '@/lib/actions/posts';
+import { getCategories } from '@/lib/actions/categories';
 import toast from 'react-hot-toast';
 import { FiFileText, FiUpload, FiDownload, FiList, FiBook } from 'react-icons/fi';
 import { FiCloud } from 'react-icons/fi';
@@ -59,26 +60,24 @@ export default function BulkUploadPage() {
 
     try {
       setLoading(true);
-      await CmsService.posts.bulkUpload(file);
-      toast.success('Posts uploaded successfully');
-      setFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const result = await bulkUploadPosts({}, formData);
+      
+      if (result.message && result.message.includes('Imported')) {
+          toast.success(result.message);
+          setFile(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+          router.push('/cms/posts');
+      } else {
+          toast.error(result.message || 'Failed to upload posts');
       }
-      router.push('/cms/posts');
     } catch (error) {
       console.error('Upload error:', error);
-      let errorMessage = 'Failed to upload posts';
-      if (error.response?.data) {
-        if (typeof error.response.data === 'string') {
-          errorMessage = error.response.data;
-        } else if (error.response.data.detail) {
-          errorMessage = error.response.data.detail;
-        } else if (error.response.data.message) {
-          errorMessage = error.response.data.message;
-        }
-      }
-      toast.error(errorMessage);
+      toast.error('Failed to upload posts');
     } finally {
       setLoading(false);
     }
@@ -123,7 +122,7 @@ export default function BulkUploadPage() {
   const handleCategoryIdsList = async () => {
     try {
       // We'll use category API to get categories
-      const categories = await CmsService.categories.list();
+      const categories = await getCategories();
       
       const csvContent = `id,name,slug,language
 ${Array.isArray(categories) ? categories.map(cat => `${cat.id},"${cat.name}","${cat.slug}",${cat.language}`).join('\n') : 'No categories found'}`;
