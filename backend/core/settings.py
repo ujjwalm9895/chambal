@@ -23,7 +23,7 @@ DEBUG = os.environ.get('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = os.environ.get(
     'ALLOWED_HOSTS',
-    'news.invitevista.com,www.news.invitevista.com,api.news.invitevista.com'
+    'news.invitevista.com,www.news.invitevista.com,api.news.invitevista.com,localhost,127.0.0.1'
 ).split(',')
 
 # ======================
@@ -84,19 +84,27 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # DATABASE
 # ======================
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),
-        'PORT': os.environ.get('DB_PORT', '3306'),
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+if os.environ.get('DB_NAME'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.environ.get('DB_NAME'),
+            'USER': os.environ.get('DB_USER'),
+            'PASSWORD': os.environ.get('DB_PASSWORD'),
+            'HOST': os.environ.get('DB_HOST', 'localhost'),
+            'PORT': os.environ.get('DB_PORT', '3306'),
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # ======================
 # PASSWORD VALIDATION
@@ -156,7 +164,23 @@ SIMPLE_JWT = {
 # CORS
 # ======================
 
+# ======================
+# CORS
+# ======================
+
 CORS_ALLOWED_ORIGINS = [
     "https://news.invitevista.com",
     "https://www.news.invitevista.com",
+    "http://localhost:3000",
 ]
+
+# ======================
+# GOOGLE CLOUD STORAGE
+# ======================
+
+if os.environ.get('GS_BUCKET_NAME'):
+    GS_BUCKET_NAME = os.environ.get('GS_BUCKET_NAME')
+    DEFAULT_FILE_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+    STATICFILES_STORAGE = 'storages.backends.gcloud.GoogleCloudStorage'
+    GS_DEFAULT_ACL = 'publicRead'
+
