@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { authApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 
 export default function LoginPage() {
@@ -18,7 +18,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await authApi.login(formData.username, formData.password);
+      const response = await CmsService.auth.login(formData.username, formData.password);
       
       // Store tokens and user data
       localStorage.setItem('access_token', response.access);

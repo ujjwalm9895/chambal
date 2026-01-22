@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getMenus } from '@/lib/api';
+import { PublicService } from '@/lib/services/public-service';
 
 export default function Navbar() {
   const [menus, setMenus] = useState([]);
@@ -14,8 +14,8 @@ export default function Navbar() {
 
   const fetchMenus = async () => {
     try {
-      const data = await getMenus('navbar');
-      setMenus(data.results || data);
+      const data = await PublicService.getMenus('navbar');
+      setMenus(data?.results || data || []);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching menus:', error);

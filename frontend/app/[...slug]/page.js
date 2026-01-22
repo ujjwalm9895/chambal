@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getPageBySlug } from '@/lib/cms/client';
+import { PublicService } from '@/lib/services/public-service';
 import SectionRenderer from '@/components/sections/SectionRenderer';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -14,7 +14,7 @@ export default async function DynamicCMSPage({ params }) {
   const slugPath = params.slug?.join('/') || '';
 
   // ✅ Architecture Rule: Safe Fetching
-  const pageData = await getPageBySlug(slugPath);
+  const pageData = await PublicService.getPage(slugPath);
 
   // ✅ Architecture Rule: Graceful 404
   if (!pageData) {
@@ -38,7 +38,7 @@ export default async function DynamicCMSPage({ params }) {
 // Optional: Metadata generation from CMS
 export async function generateMetadata({ params }) {
   const slugPath = params.slug?.join('/') || '';
-  const pageData = await getPageBySlug(slugPath);
+  const pageData = await PublicService.getPage(slugPath);
 
   if (!pageData) {
     return {
