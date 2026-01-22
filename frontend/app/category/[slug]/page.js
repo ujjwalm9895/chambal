@@ -1,16 +1,16 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SectionRenderer from '@/components/sections/SectionRenderer';
-import { getCategory, getArticles } from '@/lib/api';
+import { PublicService } from '@/lib/services/public-service';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }) {
   try {
-    const category = await getCategory(params.slug);
+    const category = await PublicService.getCategory(params.slug);
     
     return {
-      title: `${category.name} - Chambal Sandesh`,
-      description: `Latest articles in ${category.name} category`,
+      title: `${category?.name || 'Category'} - Chambal Sandesh`,
+      description: `Latest articles in ${category?.name || 'this'} category`,
     };
   } catch (error) {
     return {
@@ -23,7 +23,7 @@ export default async function CategoryPage({ params, searchParams }) {
   let category;
   
   try {
-    category = await getCategory(params.slug);
+    category = await PublicService.getCategory(params.slug);
     if (!category) {
       notFound();
     }

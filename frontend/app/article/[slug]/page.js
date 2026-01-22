@@ -1,20 +1,20 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import { getArticle } from '@/lib/api';
+import { PublicService } from '@/lib/services/public-service';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }) {
   try {
-    const article = await getArticle(params.slug);
+    const article = await PublicService.getArticle(params.slug);
     
     return {
-      title: article.seo_title || article.title,
-      description: article.seo_description || article.content.substring(0, 160),
+      title: article?.seo_title || article?.title,
+      description: article?.seo_description || article?.content?.substring(0, 160) || '',
       openGraph: {
-        title: article.seo_title || article.title,
-        description: article.seo_description || article.content.substring(0, 160),
-        images: article.featured_image_url ? [article.featured_image_url] : [],
+        title: article?.seo_title || article?.title,
+        description: article?.seo_description || article?.content?.substring(0, 160) || '',
+        images: article?.featured_image_url ? [article.featured_image_url] : [],
         type: 'article',
       },
     };
