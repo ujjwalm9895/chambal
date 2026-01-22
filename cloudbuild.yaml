@@ -61,14 +61,15 @@ steps:
       - 'NEXT_PUBLIC_API_BASE_URL=${_NEXT_PUBLIC_API_BASE_URL}'
 
 substitutions:
-  _REGION: us-central1
-  _CLOUD_SQL_INSTANCE: "project:region:instance"
-  _DB_NAME: "chambal"
-  _DB_USER: "chambal"
-  _DB_PASSWORD: "changeme"
-  _GS_BUCKET_NAME: "chambal-media"
-  _NEXT_PUBLIC_API_BASE_URL: "https://api.news.invitevista.com" # Update this to your actual backend URL
+  _REGION: asia-south2
+  _CLOUD_SQL_INSTANCE: chambal-485109:asia-south2:chambal-db-instance
+  _DB_NAME: chambal
+  _DB_USER: chambal
+  _DB_PASSWORD: ',SigC*P"gX1"Z>IY'
+  _GS_BUCKET_NAME: chambal-sandesh-media-prod
+  _NEXT_PUBLIC_API_BASE_URL: https://api.news.invitevista.com
 
+  
 images:
   - 'gcr.io/$PROJECT_ID/chambal-backend'
   - 'gcr.io/$PROJECT_ID/chambal-frontend'
