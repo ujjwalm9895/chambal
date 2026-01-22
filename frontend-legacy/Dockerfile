@@ -1,4 +1,4 @@
-FROM node:18-alpine AS base
+FROM node:20-alpine AS base
 
 # Update npm to latest version to avoid warnings
 RUN npm install -g npm@latest
