@@ -1,4 +1,12 @@
 steps:
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - >
+        gcloud artifacts repositories describe ${_AR_REPO} --location=${_REGION}
+        || gcloud artifacts repositories create ${_AR_REPO} --repository-format=docker --location=${_REGION};
+        gcloud auth configure-docker ${_REGION}-docker.pkg.dev --quiet
   # =========================
   # Build Backend (Django)
   # =========================
