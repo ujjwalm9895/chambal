@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { pageApi, pageSectionApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit, FiTrash2, FiX, FiArrowUp, FiArrowDown, FiArrowLeft } from 'react-icons/fi';
 
@@ -32,7 +32,7 @@ export default function HomepageBuilderPage() {
     try {
       setLoading(true);
       // Fetch all pages
-      const pagesResponse = await pageApi.list();
+      const pagesResponse = await CmsService.pages.list();
       const pages = Array.isArray(pagesResponse) ? pagesResponse : (pagesResponse.results || []);
       setAllPages(pages);
       
@@ -52,18 +52,18 @@ export default function HomepageBuilderPage() {
         
         // Fetch full page details with sections
         try {
-          const pageDetail = await pageApi.get(targetPage.id);
+          const pageDetail = await CmsService.pages.get(targetPage.id);
           if (pageDetail.sections && pageDetail.sections.length > 0) {
             setSections(pageDetail.sections.sort((a, b) => a.order - b.order));
           } else {
             // Fetch sections separately
-            const sectionsResponse = await pageSectionApi.list({ page: targetPage.id });
+            const sectionsResponse = await CmsService.pageSections.list({ page: targetPage.id });
             const sectionsList = Array.isArray(sectionsResponse) ? sectionsResponse : (sectionsResponse.results || []);
             setSections(sectionsList.sort((a, b) => a.order - b.order));
           }
         } catch (error) {
           // If page detail doesn't include sections, fetch separately
-          const sectionsResponse = await pageSectionApi.list({ page: targetPage.id });
+          const sectionsResponse = await CmsService.pageSections.list({ page: targetPage.id });
           const sectionsList = Array.isArray(sectionsResponse) ? sectionsResponse : (sectionsResponse.results || []);
           setSections(sectionsList.sort((a, b) => a.order - b.order));
         }
@@ -157,10 +157,10 @@ export default function HomepageBuilderPage() {
       };
 
       if (editingSection) {
-        await pageSectionApi.update(editingSection.id, submitData);
+        await CmsService.pageSections.update(editingSection.id, submitData);
         toast.success('Section updated successfully');
       } else {
-        await pageSectionApi.create(submitData);
+        await CmsService.pageSections.create(submitData);
         toast.success('Section created successfully');
       }
       
@@ -187,7 +187,7 @@ export default function HomepageBuilderPage() {
     if (!confirm('Are you sure you want to delete this section?')) return;
     
     try {
-      await pageSectionApi.delete(id);
+      await CmsService.pageSections.delete(id);
       toast.success('Section deleted');
       fetchPagesAndSections();
     } catch (error) {
@@ -209,8 +209,8 @@ export default function HomepageBuilderPage() {
 
     try {
       // Swap orders
-      await pageSectionApi.update(sectionId, { order: newOrder });
-      await pageSectionApi.update(targetSection.id, { order: section.order });
+      await CmsService.pageSections.update(sectionId, { order: newOrder });
+      await CmsService.pageSections.update(targetSection.id, { order: section.order });
       toast.success('Section order updated');
       fetchPagesAndSections();
     } catch (error) {

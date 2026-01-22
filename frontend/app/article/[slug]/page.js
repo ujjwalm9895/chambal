@@ -29,8 +29,12 @@ export default async function ArticlePage({ params }) {
   let article;
   
   try {
-    article = await getArticle(params.slug);
+    article = await PublicService.getArticle(params.slug);
   } catch (error) {
+    notFound();
+  }
+
+  if (!article) {
     notFound();
   }
 

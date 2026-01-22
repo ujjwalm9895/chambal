@@ -1,16 +1,16 @@
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SectionRenderer from '@/components/sections/SectionRenderer';
-import { getPage } from '@/lib/api';
+import { PublicService } from '@/lib/services/public-service';
 import { notFound } from 'next/navigation';
 
 export async function generateMetadata({ params }) {
   try {
-    const page = await getPage(params.slug);
+    const page = await PublicService.getPage(params.slug);
     
     return {
-      title: page.seo_title || page.title,
-      description: page.seo_description || '',
+      title: page?.seo_title || page?.title,
+      description: page?.seo_description || '',
     };
   } catch (error) {
     return {
@@ -23,8 +23,12 @@ export default async function CustomPage({ params }) {
   let page;
   
   try {
-    page = await getPage(params.slug);
+    page = await PublicService.getPage(params.slug);
   } catch (error) {
+    notFound();
+  }
+
+  if (!page) {
     notFound();
   }
 

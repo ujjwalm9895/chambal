@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { pageApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit, FiTrash2, FiX, FiFile } from 'react-icons/fi';
 import { format } from 'date-fns';
@@ -53,7 +53,7 @@ export default function PagesPage() {
   const fetchPages = async () => {
     try {
       setLoading(true);
-      const response = await pageApi.list();
+      const response = await CmsService.pages.list();
       setPages(Array.isArray(response) ? response : (response.results || []));
     } catch (error) {
       console.error('Page fetch error:', error);
@@ -93,10 +93,10 @@ export default function PagesPage() {
       }
       
       if (editingPage) {
-        await pageApi.update(editingPage.id, submitData);
+        await CmsService.pages.update(editingPage.id, submitData);
         toast.success('Page updated successfully');
       } else {
-        await pageApi.create(submitData);
+        await CmsService.pages.create(submitData);
         toast.success('Page created successfully');
       }
       setShowForm(false);
@@ -145,7 +145,7 @@ export default function PagesPage() {
     if (!confirm('Are you sure you want to delete this page? This action cannot be undone.')) return;
     
     try {
-      await pageApi.delete(id);
+      await CmsService.pages.delete(id);
       toast.success('Page deleted successfully');
       fetchPages();
     } catch (error) {

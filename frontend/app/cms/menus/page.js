@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { menuApi, categoryApi, pageApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit, FiTrash2, FiX } from 'react-icons/fi';
 
@@ -41,7 +41,7 @@ export default function MenusPage() {
   const fetchMenus = async () => {
     try {
       setLoading(true);
-      const response = await menuApi.list();
+      const response = await CmsService.menus.list();
       setMenus(Array.isArray(response) ? response : (response.results || []));
     } catch (error) {
       console.error('Menu fetch error:', error);
@@ -59,7 +59,7 @@ export default function MenusPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await categoryApi.list();
+      const response = await CmsService.categories.list();
       console.log('Raw categories response:', response); // Debug
       
       // Handle different response formats
@@ -96,7 +96,7 @@ export default function MenusPage() {
 
   const fetchPages = async () => {
     try {
-      const response = await pageApi.list();
+      const response = await CmsService.pages.list();
       setPages(Array.isArray(response) ? response : (response.results || []));
     } catch (error) {
       console.error('Failed to load pages');
@@ -130,10 +130,10 @@ export default function MenusPage() {
       }
 
       if (editingMenu) {
-        await menuApi.update(editingMenu.id, submitData);
+        await CmsService.menus.update(editingMenu.id, submitData);
         toast.success('Menu updated successfully');
       } else {
-        await menuApi.create(submitData);
+        await CmsService.menus.create(submitData);
         toast.success('Menu created successfully');
       }
       setShowForm(false);
@@ -190,7 +190,7 @@ export default function MenusPage() {
     if (!confirm('Are you sure you want to delete this menu item?')) return;
     
     try {
-      await menuApi.delete(id);
+      await CmsService.menus.delete(id);
       toast.success('Menu deleted');
       fetchMenus();
     } catch (error) {

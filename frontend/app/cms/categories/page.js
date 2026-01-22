@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { categoryApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit, FiTrash2, FiCheckCircle, FiX } from 'react-icons/fi';
 import { format } from 'date-fns';
@@ -42,7 +42,7 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const response = await categoryApi.list();
+      const response = await CmsService.categories.list();
       setCategories(Array.isArray(response) ? response : (response.results || []));
     } catch (error) {
       console.error('Category fetch error:', error);
@@ -88,10 +88,10 @@ export default function CategoriesPage() {
       }
       
       if (editingCategory) {
-        await categoryApi.update(editingCategory.id, submitData);
+        await CmsService.categories.update(editingCategory.id, submitData);
         toast.success('Category updated successfully');
       } else {
-        await categoryApi.create(submitData);
+        await CmsService.categories.create(submitData);
         toast.success('Category created successfully');
       }
       setShowForm(false);

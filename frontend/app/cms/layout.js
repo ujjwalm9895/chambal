@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Sidebar from '@/components/cms/Sidebar';
 import Topbar from '@/components/cms/Topbar';
-import { authApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import { Toaster } from 'react-hot-toast';
 
 export default function CMSLayout({ children }) {
@@ -39,7 +39,7 @@ export default function CMSLayout({ children }) {
 
       // Try to get user from API
       try {
-        const userData = await authApi.me();
+        const userData = await CmsService.auth.me();
         setUser(userData);
         // Also update localStorage with fresh data
         localStorage.setItem('user', JSON.stringify(userData));

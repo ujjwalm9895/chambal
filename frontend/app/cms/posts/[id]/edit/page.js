@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { postApi, categoryApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import dynamic from 'next/dynamic';
 import { FiPlus, FiX } from 'react-icons/fi';
@@ -59,7 +59,7 @@ export default function PostEditPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await categoryApi.list();
+      const response = await CmsService.categories.list();
       setCategories(Array.isArray(response) ? response : (response.results || []));
     } catch (error) {
       console.error('Failed to load categories');
@@ -83,7 +83,7 @@ export default function PostEditPage() {
         categoryData.slug = newCategory.slug.trim();
       }
       
-      const created = await categoryApi.create(categoryData);
+      const created = await CmsService.categories.create(categoryData);
       toast.success('Category created successfully');
       setShowCategoryForm(false);
       setNewCategory({
@@ -127,7 +127,7 @@ export default function PostEditPage() {
   const fetchPost = async () => {
     try {
       setLoading(true);
-      const post = await postApi.get(postId);
+      const post = await CmsService.posts.get(postId);
       setFormData({
         title: post.title || '',
         slug: post.slug || '',
@@ -234,10 +234,10 @@ export default function PostEditPage() {
       }
 
       if (postId) {
-        await postApi.update(postId, data, config);
+        await CmsService.posts.update(postId, data, config);
         toast.success('Post updated successfully');
       } else {
-        await postApi.create(data, config);
+        await CmsService.posts.create(data, config);
         toast.success('Post created successfully');
       }
       router.push('/cms/posts');

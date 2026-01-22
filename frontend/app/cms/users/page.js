@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { userApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit, FiTrash2, FiX, FiUser } from 'react-icons/fi';
 import { format } from 'date-fns';
@@ -29,7 +29,7 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await userApi.list();
+      const response = await CmsService.users.list();
       setUsers(Array.isArray(response) ? response : (response.results || []));
     } catch (error) {
       console.error('User fetch error:', error);
@@ -57,7 +57,7 @@ export default function UsersPage() {
           role: formData.role,
           is_active: formData.is_active,
         };
-        await userApi.update(editingUser.id, updateData);
+        await CmsService.users.update(editingUser.id, updateData);
         toast.success('User updated successfully');
       } else {
         // Create new user (password required)
@@ -74,7 +74,7 @@ export default function UsersPage() {
           phone: formData.phone.trim() || null,
           role: formData.role,
         };
-        await userApi.create(createData);
+        await CmsService.users.create(createData);
         toast.success('User created successfully');
       }
       setShowForm(false);
@@ -126,7 +126,7 @@ export default function UsersPage() {
     if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
     
     try {
-      await userApi.delete(id);
+      await CmsService.users.delete(id);
       toast.success('User deleted');
       fetchUsers();
     } catch (error) {

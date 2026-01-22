@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
-import { pageApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import { FiX, FiSave, FiLayout } from 'react-icons/fi';
 
@@ -42,7 +42,7 @@ export default function PageEditPage() {
   const fetchPage = async () => {
     try {
       setLoading(true);
-      const page = await pageApi.get(pageId);
+      const page = await CmsService.pages.get(pageId);
       setFormData({
         title: page.title || '',
         slug: page.slug || '',
@@ -84,11 +84,11 @@ export default function PageEditPage() {
 
       let savedPage;
       if (pageId) {
-        savedPage = await pageApi.update(pageId, data);
+        savedPage = await CmsService.pages.update(pageId, data);
         toast.success('Page updated successfully');
         // Stay on edit page after update
       } else {
-        savedPage = await pageApi.create(data);
+        savedPage = await CmsService.pages.create(data);
         toast.success('Page created successfully');
         // Redirect to edit page of newly created page so user can continue editing (add sections, etc.)
         if (savedPage && savedPage.id) {

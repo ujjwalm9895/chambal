@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { postApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import { FiFileText, FiUpload, FiDownload, FiList, FiBook } from 'react-icons/fi';
 import { FiCloud } from 'react-icons/fi';
@@ -59,7 +59,7 @@ export default function BulkUploadPage() {
 
     try {
       setLoading(true);
-      await postApi.bulkUpload(file);
+      await CmsService.posts.bulkUpload(file);
       toast.success('Posts uploaded successfully');
       setFile(null);
       if (fileInputRef.current) {
@@ -122,10 +122,8 @@ export default function BulkUploadPage() {
 
   const handleCategoryIdsList = async () => {
     try {
-      const response = await postApi.list({ page_size: 1000 });
       // We'll use category API to get categories
-      const { categoryApi } = await import('@/lib/cms-api');
-      const categories = await categoryApi.list();
+      const categories = await CmsService.categories.list();
       
       const csvContent = `id,name,slug,language
 ${Array.isArray(categories) ? categories.map(cat => `${cat.id},"${cat.name}","${cat.slug}",${cat.language}`).join('\n') : 'No categories found'}`;

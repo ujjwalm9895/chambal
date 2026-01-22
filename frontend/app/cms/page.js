@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { dashboardApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import {
   FiFileText,
@@ -48,7 +48,7 @@ export default function DashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const data = await dashboardApi.getStats();
+      const data = await CmsService.dashboard.getStats();
       setStats(data);
     } catch (error) {
       toast.error('Failed to load dashboard stats');

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getArticles } from '@/lib/api';
+import { PublicService } from '@/lib/services/public-service';
 
 export default function ArticleList({ data, sliderMode = false }) {
   const [articles, setArticles] = useState(data?.articles || []);
@@ -18,40 +18,21 @@ export default function ArticleList({ data, sliderMode = false }) {
     if (!data?.articles || data.articles.length === 0) {
       fetchArticles();
     }
-  }, [data?.category, data?.lang]); // Re-fetch if category or language changes
+  }, [data]);
 
   const fetchArticles = async () => {
     try {
       setLoading(true);
       const params = {};
-      
-      // Build params from section data
-      if (data?.category) {
-        params.category = data.category;
-      }
-      if (data?.limit) {
-        params.page_size = data.limit;
-      }
-      if (data?.featured) {
-        params.is_featured = true;
-      }
-      if (data?.trending) {
-        params.is_trending = true;
-      }
-      if (data?.lang) {
-        params.lang = data.lang;
-      }
+      if (data?.category) params.category = data.category;
+      if (data?.limit) params.limit = data.limit;
+      if (data?.lang) params.lang = data.lang;
 
-      console.log('Fetching articles with params:', params); // Debug log
-      const response = await getArticles(params);
-      console.log('API response:', response); // Debug log
-      const fetchedArticles = response.results || response;
-      console.log('Fetched articles:', fetchedArticles?.length || 0, fetchedArticles); // Debug log
-      setArticles(Array.isArray(fetchedArticles) ? fetchedArticles : []);
-      setLoading(false);
+      const response = await PublicService.getArticles(params);
+      setArticles(response?.results || response || []);
     } catch (error) {
       console.error('Error fetching articles:', error);
-      setArticles([]);
+    } finally {
       setLoading(false);
     }
   };

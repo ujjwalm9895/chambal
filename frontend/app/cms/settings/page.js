@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import cmsApiClient from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import { FiSave, FiUpload, FiX } from 'react-icons/fi';
 
@@ -44,8 +44,7 @@ export default function SettingsPage() {
   const fetchSettings = async () => {
     try {
       setLoading(true);
-      const response = await cmsApiClient.get('/cms/settings/');
-      const settings = response.data;
+      const settings = await CmsService.settings.get();
       
       setFormData({
         site_name: settings.site_name || '',
@@ -129,11 +128,7 @@ export default function SettingsPage() {
         submitData.append('site_favicon', faviconFile);
       }
       
-      await cmsApiClient.put('/cms/settings/', submitData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
+      await CmsService.settings.update(submitData);
       
       toast.success('Settings saved successfully');
       fetchSettings(); // Reload to get updated URLs

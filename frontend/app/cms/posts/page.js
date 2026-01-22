@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { postApi, categoryApi, userApi } from '@/lib/cms-api';
+import { CmsService } from '@/lib/services/cms-service';
 import toast from 'react-hot-toast';
 import { FiPlus, FiEdit, FiTrash2, FiEye, FiCheckCircle, FiChevronDown } from 'react-icons/fi';
 import { format } from 'date-fns';
@@ -37,7 +37,7 @@ export default function PostsPage() {
 
   const fetchCategories = async () => {
     try {
-      const response = await categoryApi.list();
+      const response = await CmsService.categories.list();
       setCategories(Array.isArray(response) ? response : (response.results || []));
     } catch (error) {
       console.error('Failed to load categories');
@@ -46,7 +46,7 @@ export default function PostsPage() {
 
   const fetchUsers = async () => {
     try {
-      const response = await userApi.list();
+      const response = await CmsService.users.list();
       setUsers(Array.isArray(response) ? response : (response.results || []));
     } catch (error) {
       console.error('Failed to load users');
@@ -67,7 +67,7 @@ export default function PostsPage() {
       if (filters.user) params.author = filters.user;
       if (filters.search) params.search = filters.search;
 
-      const response = await postApi.list(params);
+      const response = await CmsService.posts.list(params);
       setPosts(response.results || response);
       setTotalCount(response.count || (Array.isArray(response) ? response.length : 0));
       setTotalPages(response.count ? Math.ceil(response.count / pageSize) : 1);
@@ -91,7 +91,7 @@ export default function PostsPage() {
     if (!confirm('Are you sure you want to delete this post?')) return;
     
     try {
-      await postApi.delete(id);
+      await CmsService.posts.delete(id);
       toast.success('Post deleted');
       fetchPosts();
       setOpenDropdown(null);
