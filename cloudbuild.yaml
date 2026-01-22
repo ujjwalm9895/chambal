@@ -66,7 +66,7 @@ substitutions:
   _CLOUD_SQL_INSTANCE: chambal-485109:asia-south2:chambal-db-instance
   _DB_NAME: chambal
   _DB_USER: chambal
-  _DB_PASSWORD: ',SigC*P\"gX1\"Z>IY'' # Quoted to handle special chars
+  _DB_PASSWORD: ',SigC*P"gX1"Z>IY' # Quoted to handle special chars
   # Note: API_BASE_URL is removed as we are now Server Actions (Internal)
 
 # =========================
