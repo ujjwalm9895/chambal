@@ -144,7 +144,7 @@ MEDIA_BASE_URL=https://your-backend.railway.app/uploads
 ### Admin Panel (.env)
 ```env
 VITE_API_URL=https://your-backend.railway.app/api/v1
-```
+```a
 
 ### Website (.env.local)
 ```env
