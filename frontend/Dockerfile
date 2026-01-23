@@ -11,7 +11,9 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
-RUN npm ci
+# Use npm install instead of npm ci to be more forgiving of lockfile mismatches
+# This ensures a "from scratch" dependency resolution if the lockfile is out of sync
+RUN npm install
 
 # =========================
 # Build stage
