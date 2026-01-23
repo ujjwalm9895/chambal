@@ -1,421 +1,352 @@
-# Chambal Sandesh - Custom CMS + News Website
+# Custom CMS - Full-Stack Content Management System
 
-A production-ready, fully data-driven CMS-based news website built with Django REST Framework (Backend) and Next.js (Frontend). Features a **custom CMS panel** (NOT Django Admin) with complete workflow management.
+A fully custom, production-ready Content Management System built with modern technologies. This CMS provides complete control over website content through a powerful admin panel and renders pages dynamically on the frontend.
 
-## Project Overview
+## 🏗️ Architecture
 
-**Chambal Sandesh** is a complete CMS solution where:
-- **Custom CMS Panel** - Built with Next.js (not Django Admin)
-- **JWT Authentication** - Secure token-based auth
-- **Post Workflow** - Draft → Pending → Scheduled → Published
-- **Role-Based Access** - Admin, Editor, Writer roles
-- **Bulk Upload** - CSV import for posts
-- **Homepage Builder** - Dynamic sections management
-- **Multi-Language** - Hindi + English support
-- **Everything CMS-Driven** - Zero hardcoded content
+- **Backend**: NestJS + PostgreSQL + Prisma
+- **Admin Panel**: React + TypeScript + Material-UI
+- **Website Frontend**: Next.js 14 + Tailwind CSS
+- **Authentication**: JWT with role-based access control
+- **API**: RESTful, versioned (`/api/v1`)
 
-## Tech Stack
-
-### Backend
-- **Django 4.2** - Web framework
-- **Django REST Framework** - API development
-- **MySQL** - Database
-- **JWT** - Authentication (djangorestframework-simplejwt)
-- **Pandas** - CSV processing for bulk upload
-
-### Frontend
-- **Next.js 14** - React framework (App Router)
-- **Tailwind CSS** - Styling
-- **TipTap** - Rich text editor
-- **Axios** - HTTP client
-- **React Hot Toast** - Notifications
-
-## Project Structure
+## 📁 Project Structure
 
 ```
-chambal/
-├── backend/
-│   ├── config/              # Django project settings
-│   ├── users/               # User management + JWT auth
-│   ├── cms/                 # CMS app
-│   │   ├── models.py        # Post, Category, Menu, Page, PageSection
-│   │   ├── cms_views.py     # CMS APIs (authenticated)
-│   │   ├── public_views.py  # Public APIs (no auth)
-│   │   ├── permissions.py   # Role-based permissions
-│   │   └── urls.py
-│   ├── manage.py
-│   └── requirements.txt
-│
-├── frontend/
-│   ├── app/
-│   │   ├── cms/             # CMS Panel routes
-│   │   │   ├── layout.js    # CMS Layout with sidebar
-│   │   │   ├── page.js      # Dashboard
-│   │   │   ├── login/
-│   │   │   ├── posts/
-│   │   │   ├── categories/
-│   │   │   └── ...
-│   │   ├── page.js          # Public homepage
-│   │   ├── article/[slug]/
-│   │   ├── category/[slug]/
-│   │   └── page/[slug]/
-│   ├── components/
-│   │   ├── cms/             # CMS components
-│   │   └── sections/        # Dynamic section renderers
-│   ├── lib/
-│   │   ├── api.js           # Public API client
-│   │   └── cms-api.js       # CMS API client (with JWT)
-│   └── package.json
-│
+.
+├── backend/          # NestJS API server
+├── admin/           # React admin panel
+├── website/         # Next.js public website
 └── README.md
 ```
 
-## 🗄️ Database Models
-
-### User
-- `name`, `email`, `username`, `password`
-- `role` (admin/editor/writer)
-- `is_active`
-
-### Post (was Article)
-- `title`, `slug`, `content` (rich text), `excerpt`
-- `category`, `author`, `language` (en/hi)
-- `status` (draft/pending/scheduled/published)
-- `is_featured`, `is_slider`, `is_breaking`, `is_recommended`
-- `publish_at` (scheduling)
-- `seo_title`, `seo_description`
-- `views_count`
-
-### Category
-- `name`, `slug`, `language` (en/hi)
-- `show_in_menu`, `menu_order`, `is_active`
-
-### Menu
-- `title`, `menu_type` (navbar/footer)
-- `link_type` (category/page/url)
-- `order`, `is_active`
-
-### Page & PageSection
-- `Page`: `title`, `slug`, SEO fields
-- `PageSection`: `section_type` (hero/slider/article_list/banner/html), `data` (JSON), `order`
-
-## Setup Instructions
+## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.8+
-- Node.js 18+
-- MySQL 8.0+
-- pip and npm
 
-### Backend Setup
+- Node.js 18+ and npm/yarn
+- PostgreSQL 14+
+- Git
 
-1. **Navigate to backend directory:**
+### 1. Database Setup
+
+**Option 1: Using psql (Recommended)**
+```bash
+# Connect to PostgreSQL and create database
+psql -U postgres -c "CREATE DATABASE cms_db;"
+
+# Or interactively:
+psql -U postgres
+CREATE DATABASE cms_db;
+\q
+```
+
+**Option 2: Using pgAdmin (GUI)**
+1. Open pgAdmin
+2. Right-click "Databases" > Create > Database
+3. Name: `cms_db` > Save
+
+**Option 3: Using Docker**
+```bash
+docker run --name cms-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=cms_db -p 5432:5432 -d postgres:14
+```
+
+**Note:** If `psql` command is not found, ensure PostgreSQL is installed and added to your PATH. See `setup-database.md` for detailed instructions.
+
+### 2. Backend Setup
+
 ```bash
 cd backend
-```
 
-2. **Create virtual environment:**
-```bash
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# Linux/Mac
-source venv/bin/activate
-```
-
-3. **Install dependencies:**
-```bash
-pip install -r requirements.txt
-```
-
-4. **Configure database:**
-   - Create MySQL database:
-   ```sql
-   CREATE DATABASE chambal_sandesh CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   ```
-
-5. **Configure environment variables:**
-   - Copy `.env.example` to `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-   - Edit `.env` with your database credentials:
-   ```
-   SECRET_KEY=your-secret-key-here
-   DEBUG=True
-   ALLOWED_HOSTS=localhost,127.0.0.1
-   DB_NAME=chambal_sandesh
-   DB_USER=root
-   DB_PASSWORD=your-password
-   DB_HOST=localhost
-   DB_PORT=3306
-   ```
-
-6. **Run migrations:**
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
-7. **Create superuser:**
-```bash
-python manage.py createsuperuser
-```
-
-8. **Run development server:**
-```bash
-python manage.py runserver
-```
-
-Backend will run on `http://localhost:8000`
-- Admin panel (fallback): `http://localhost:8000/admin`
-- API: `http://localhost:8000/api`
-
-### Frontend Setup
-
-1. **Navigate to frontend directory:**
-```bash
-cd frontend
-```
-
-2. **Install dependencies:**
-```bash
+# Install dependencies
 npm install
-# or
-yarn install
+
+# Copy environment file
+# On Windows (PowerShell):
+Copy-Item env.template .env
+# On Linux/Mac:
+cp env.template .env
+
+# Edit .env with your database credentials
+# DATABASE_URL="postgresql://user:password@localhost:5432/cms_db?schema=public"
+# JWT_SECRET="your-secret-key-here"
+
+# Generate Prisma client
+npm run prisma:generate
+
+# Run migrations
+npm run prisma:migrate
+
+# Seed database
+c
+
+# Start development server
+npm run start:dev
 ```
 
-3. **Configure environment variables:**
-   - Create `.env.local`:
-   ```bash
-   NEXT_PUBLIC_API_BASE_URL=http://localhost:8000/api
-   ```
+Backend will run on `http://localhost:3000`
 
-4. **Run development server:**
+### 3. Admin Panel Setup
+
 ```bash
+cd admin
+
+# Install dependencies
+npm install
+
+# Create .env file (optional, defaults work)
+echo "VITE_API_URL=http://localhost:3000/api/v1" > .env
+
+# Start development server
 npm run dev
-# or
-yarn dev
 ```
 
-Frontend will run on `http://localhost:3000`
-- Public website: `http://localhost:3000`
-- CMS panel: `http://localhost:3000/cms`
+Admin panel will run on `http://localhost:3001`
 
-## API Endpoints
+### 4. Website Frontend Setup
 
-### Auth APIs (Public)
-- `POST /api/auth/login/` - Login (returns JWT tokens)
-- `POST /api/auth/logout/` - Logout (blacklist refresh token)
-- `GET /api/auth/me/` - Get current user (requires JWT)
+```bash
+cd website
 
-### CMS APIs (Authenticated)
-- `GET /api/cms/dashboard/stats/` - Dashboard statistics
-- `CRUD /api/cms/posts/` - Post management
-- `POST /api/cms/posts/bulk-upload/` - Bulk CSV upload
-- `POST /api/cms/posts/{id}/approve/` - Approve pending post
-- `CRUD /api/cms/categories/` - Category management
-- `CRUD /api/cms/menus/` - Menu management
-- `CRUD /api/cms/pages/` - Page management
-- `CRUD /api/cms/page-sections/` - Page section management
+# Install dependencies
+npm install
 
-### Public APIs (No Auth)
-- `GET /api/homepage/homepage/` - Homepage data
-- `GET /api/articles/` - Get articles (filters: category, lang, featured, etc.)
-- `GET /api/articles/{slug}/` - Get single article
-- `GET /api/categories/` - Get categories
-- `GET /api/menus/` - Get menus
-- `GET /api/pages/{slug}/` - Get page with sections
+# Create .env.local file
+echo "NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1" > .env.local
 
-## 🔐 Authentication
+# Start development server
+npm run dev
+```
 
-### Login Flow
-1. User logs in via `/cms/login`
-2. Backend returns JWT `access` and `refresh` tokens
-3. Frontend stores tokens in `localStorage`
-4. All CMS API calls include `Authorization: Bearer {access_token}`
-5. Token auto-refreshes on 401 errors
+Website will run on `http://localhost:3002`
 
-### Roles & Permissions
-- **Admin**: Full access to all features
-- **Editor**: Can approve posts, manage content (except users)
-- **Writer**: Can create/edit own posts, cannot approve
+## 🔐 Default Credentials
 
-## CMS Panel Features
+After seeding the database:
 
-### Dashboard
-- Statistics cards (Total, Published, Pending, Drafts, Scheduled, etc.)
-- Clickable cards → filtered post list
-- Real-time stats from API
+- **Admin**: `admin@cms.com` / `admin123`
+- **Editor**: `editor@cms.com` / `editor123`
 
-### Post Management
-- **Post Editor**: Rich text editor (TipTap), image upload, workflow controls
-- **Post Listing**: Filter by status, featured, slider, breaking
-- **Workflow**: Draft → Pending → Scheduled → Published
-- **Bulk Upload**: CSV import with validation
+## 📚 Features
 
-### Homepage Builder
-- Create/edit pages with dynamic sections
-- Section types: Hero, Slider, Article List, Banner, HTML
-- Drag-and-drop ordering
-- Preview sections
+### Authentication & Authorization
+- JWT-based authentication
+- Role-based access control (ADMIN, EDITOR)
+- Secure password hashing with bcrypt
+- Protected API routes
 
-### Content Management
-- **Categories**: Create with language support (en/hi)
-- **Menus**: Navbar and footer menus
-- **Pages**: Custom pages with SEO
-- **Users**: User management (Admin only)
+### Page Management
+- Create, edit, delete pages
+- Unique slug generation
+- Draft/Published status
+- SEO metadata (title, description)
 
-## Public Website
+### Dynamic Section Builder
+- **5 Section Types**:
+  - **Hero**: Large banner with heading, subheading, image, CTA button
+  - **Text**: Rich text content with title
+  - **Image**: Image with caption and alt text
+  - **CTA**: Call-to-action section
+  - **FAQ**: Frequently asked questions
+- Drag & drop reordering
+- Dynamic add/remove sections
+- JSON-based flexible content storage
 
-### Homepage
-- Dynamically renders sections from CMS
-- Featured posts, slider, breaking news
-- No hardcoded content
+### Media Management
+- Upload images and files
+- Media library with preview
+- File metadata storage
+- Secure file serving
+
+### Menu Management
+- Create menus for header/footer
+- Menu items with ordering
+- Hierarchical menu support (parent/child)
+
+### Website Rendering
+- Dynamic page rendering by slug
+- Section-based page composition
+- SEO tags from CMS
+- Only published pages visible
+- Responsive design with Tailwind CSS
+
+## 🛠️ API Endpoints
+
+### Authentication
+- `POST /api/v1/auth/register` - Register new user
+- `POST /api/v1/auth/login` - Login user
 
 ### Pages
-- `/` - Homepage
-- `/article/[slug]` - Article detail
-- `/category/[slug]` - Category listing
-- `/page/[slug]` - Custom page
+- `GET /api/v1/pages` - List all pages (with `?includeDrafts=true` for drafts)
+- `GET /api/v1/pages/public/:slug` - Get published page by slug (public)
+- `GET /api/v1/pages/:id` - Get page by ID
+- `POST /api/v1/pages` - Create page (auth required)
+- `PATCH /api/v1/pages/:id` - Update page (auth required)
+- `DELETE /api/v1/pages/:id` - Delete page (admin only)
 
-### Dynamic Section Rendering
-```javascript
-switch(section.section_type) {
-  case "hero":
-  case "slider":
-  case "article_list":
-  case "banner":
-  case "html":
-}
+### Sections
+- `GET /api/v1/sections/page/:pageId` - Get sections for a page
+- `POST /api/v1/sections` - Create section (auth required)
+- `PATCH /api/v1/sections/:id` - Update section (auth required)
+- `DELETE /api/v1/sections/:id` - Delete section (auth required)
+- `POST /api/v1/sections/reorder` - Reorder sections (auth required)
+
+### Media
+- `GET /api/v1/media` - List all media (auth required)
+- `POST /api/v1/media/upload` - Upload file (auth required)
+- `GET /api/v1/media/:id` - Get media by ID (auth required)
+- `DELETE /api/v1/media/:id` - Delete media (admin only)
+
+### Menus
+- `GET /api/v1/menus` - List all menus
+- `GET /api/v1/menus/location/:location` - Get menu by location
+- `POST /api/v1/menus` - Create menu (auth required)
+- `POST /api/v1/menus/items` - Create menu item (auth required)
+- `PATCH /api/v1/menus/items/:id` - Update menu item (auth required)
+- `DELETE /api/v1/menus/:id` - Delete menu (admin only)
+
+## 🗄️ Database Schema
+
+### Users
+- id, email, password, role (ADMIN/EDITOR), timestamps
+
+### Pages
+- id, title, slug (unique), status (DRAFT/PUBLISHED), seoTitle, seoDescription, timestamps
+
+### Sections
+- id, pageId, type (HERO/TEXT/IMAGE/CTA/FAQ), order, content (JSON), timestamps
+
+### Media
+- id, filename, originalName, mimeType, size, path, url, timestamps
+
+### Menus
+- id, name, location (unique), timestamps
+
+### MenuItems
+- id, menuId, label, url, order, parentId (for nested menus), timestamps
+
+## 🎨 Admin Panel Features
+
+1. **Dashboard**: Overview with statistics
+2. **Pages**: List, create, edit pages
+3. **Page Editor**:
+   - Page metadata (title, slug, status)
+   - Section builder with drag & drop
+   - Rich text editor for text sections
+   - SEO settings
+4. **Media Library**: Upload and manage files
+5. **Menus**: Manage navigation menus
+
+## 🌐 Website Features
+
+- Dynamic routing based on page slugs
+- Section-based page rendering
+- SEO-optimized with meta tags from CMS
+- Responsive design
+- Header and footer menus from CMS
+
+## 🔧 Development
+
+### Backend
+```bash
+cd backend
+npm run start:dev      # Development with hot reload
+npm run build         # Build for production
+npm run start:prod    # Run production build
 ```
 
-## Post Workflow
+### Admin Panel
+```bash
+cd admin
+npm run dev           # Development server
+npm run build         # Production build
+```
 
-1. **Draft** - Writer creates post (not visible on website)
-2. **Pending** - Writer submits for review (visible to editors)
-3. **Scheduled** - Editor schedules for future publish
-4. **Published** - Post is live on website
+### Website
+```bash
+cd website
+npm run dev           # Development server
+npm run build         # Production build
+npm run start         # Production server
+```
 
-### Status Transitions
-- Writer: Draft → Pending
-- Editor/Admin: Pending → Published (or Scheduled)
-- Editor/Admin: Can directly publish drafts
+## 📦 Production Deployment
 
-## Bulk Upload
+### Backend
+1. Set environment variables in production
+2. Run migrations: `npm run prisma:migrate deploy`
+3. Build: `npm run build`
+4. Start: `npm run start:prod`
 
-### CSV Format
-Required columns:
-- `title` - Post title
-- `content` - Post content
-- `category` - Category name
+### Admin Panel
+1. Build: `npm run build`
+2. Serve static files from `dist/` directory
 
-Optional columns:
-- `status` - draft/pending/published/scheduled
-- `language` - en/hi
-- `excerpt` - Brief description
-- `publish_at` - Scheduled publish date/time
+### Website
+1. Set `NEXT_PUBLIC_API_URL` to production API URL
+2. Build: `npm run build`
+3. Start: `npm run start`
 
-### Usage
-1. Go to **CMS → Bulk Post Upload**
-2. Upload CSV file
-3. Preview validation errors
-4. Confirm upload
+## 🔒 Security Considerations
 
-## Multi-Language Support
+- JWT tokens with expiration
+- Password hashing with bcrypt
+- Role-based access control
+- Input validation with class-validator
+- CORS configuration
+- SQL injection protection (Prisma)
+- File upload validation
 
-- Categories support Hindi (`hi`) and English (`en`)
-- Posts can be in Hindi or English
-- Filter by language: `?lang=hi`
-- Language switch in CMS topbar
+## 🧪 Testing
 
-## SEO Features
+Seed data includes:
+- 2 users (admin, editor)
+- 2 sample pages (home, about)
+- Sample sections
+- Sample menus
 
-- Dynamic meta tags per post/page
-- OpenGraph support
-- Server-side rendering (Next.js SSR)
-- SEO-friendly URLs (slug-based)
-- Custom SEO title and description
+## 📝 Environment Variables
 
-## 🚦 Development Workflow
+### Backend (.env)
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/cms_db?schema=public"
+JWT_SECRET="your-secret-key"
+JWT_EXPIRES_IN="7d"
+PORT=3000
+NODE_ENV=development
+CORS_ORIGIN=http://localhost:3001,http://localhost:3002
+MEDIA_UPLOAD_PATH=./uploads
+MEDIA_BASE_URL=http://localhost:3000/uploads
+```
 
-1. **Start Backend:**
-   ```bash
-   cd backend
-   python manage.py runserver
-   ```
+### Admin (.env)
+```env
+VITE_API_URL=http://localhost:3000/api/v1
+```
 
-2. **Start Frontend:**
-   ```bash
-   cd frontend
-   npm run dev
-   ```
+### Website (.env.local)
+```env
+NEXT_PUBLIC_API_URL=http://localhost:3000/api/v1
+```
 
-3. **Access:**
-   - Public website: `http://localhost:3000`
-   - CMS panel: `http://localhost:3000/cms`
-   - Login with superuser credentials
+## 🤝 Contributing
 
-## Testing the CMS
+This is a custom CMS built from scratch. Feel free to extend and customize according to your needs.
 
-For comprehensive testing instructions, see **[TESTING_GUIDE.md](TESTING_GUIDE.md)**.
+## 📄 License
 
-Quick test checklist:
-1. Create test categories (English and Hindi)
-2. Create navbar and footer menus
-3. Create posts with different statuses
-4. Test workflow: Draft → Pending → Published
-5. Build homepage with sections
-6. Verify all content renders on public website
+MIT License - feel free to use this project for your own purposes.
 
-**For detailed step-by-step testing instructions, refer to `TESTING_GUIDE.md`**
+## 🎯 Next Steps
 
-## Key Features
-
- **Custom CMS Panel** - Built with Next.js, not Django Admin  
- **JWT Authentication** - Secure token-based auth  
- **Post Workflow** - Complete draft → published flow  
- **Role-Based Access** - Admin, Editor, Writer roles  
- **Bulk Upload** - CSV import for posts  
- **Homepage Builder** - Dynamic sections management  
- **Multi-Language** - Hindi and English support  
- **SEO Optimized** - Meta tags, OpenGraph, SSR  
- **Production Ready** - Scalable architecture  
-
-## Troubleshooting
-
-### Backend Issues
-- **Database connection error**: Check MySQL credentials in `.env`
-- **JWT errors**: Ensure `djangorestframework-simplejwt` is installed
-- **Migration errors**: Run `python manage.py migrate --run-syncdb`
-
-### Frontend Issues
-- **API connection error**: Check `NEXT_PUBLIC_API_BASE_URL` in `.env.local`
-- **CORS errors**: Ensure `django-cors-headers` is configured
-- **JWT token errors**: Clear localStorage and re-login
-
-## Production Deployment
-
-### Backend:
-- Set `DEBUG=False`
-- Configure proper `ALLOWED_HOSTS`
-- Use production database
-- Set up proper secret key
-- Configure static/media file serving
-- Set up JWT token blacklist
-
-### Frontend:
-- Build: `npm run build`
-- Start: `npm start`
-- Configure production API URL
-- Set up reverse proxy if needed
-
-## License
-
-This project is built for production use.
+- Add more section types
+- Implement media optimization
+- Add page templates
+- Implement versioning/history
+- Add webhooks
+- Implement caching
+- Add analytics
 
 ---
 
-**Built with ❤️ for Chambal Sandesh**
-
-For questions or issues, refer to the Django and Next.js documentation.
+Built with ❤️ using NestJS, React, and Next.js
