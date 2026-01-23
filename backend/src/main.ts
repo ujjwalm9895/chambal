@@ -9,7 +9,7 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('PORT') || 3000;
+  const port = configService.get<number>('PORT') || process.env.PORT || 3000;
   const corsOrigins = configService.get<string>('CORS_ORIGIN')?.split(',') || ['http://localhost:3001'];
 
   // Serve static files for media uploads

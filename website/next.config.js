@@ -4,6 +4,8 @@ const nextConfig = {
   images: {
     domains: ['localhost'],
   },
+  // Cloud Run compatibility
+  output: 'standalone',
 }
 
 module.exports = nextConfig
