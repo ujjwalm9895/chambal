@@ -2,10 +2,16 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'cms-backend-20v6.onrender.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'cms-backend-20v6.onrender.com',
+        pathname: '/uploads/**',
+      },
+    ],
   },
-  // Cloud Run compatibility
-  output: 'standalone',
+  // Vercel deployment - no standalone output needed
 }
 
 module.exports = nextConfig

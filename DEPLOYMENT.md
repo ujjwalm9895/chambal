@@ -82,10 +82,16 @@ Deploy your CMS using:
    JWT_EXPIRES_IN=7d
    NODE_ENV=production
    CORS_ORIGIN=https://your-admin.vercel.app,https://your-website.vercel.app
-   MEDIA_UPLOAD_PATH=/opt/render/project/src/uploads
+   MEDIA_UPLOAD_PATH=/opt/render/project/src/backend/uploads
    MEDIA_BASE_URL=https://cms-backend.onrender.com/uploads
    PORT=10000
    ```
+   
+   **Important for DATABASE_URL:**
+   - Use **Internal Database URL** from Render (not External)
+   - Format: `postgresql://user:password@host/database`
+   - Get it from: PostgreSQL service → Internal Database URL
+   - If connection fails, try Connection Pooling URL instead
 
 5. **Click "Create Web Service"**
 
@@ -129,8 +135,9 @@ After backend is deployed:
 
 3. **Set Environment Variables:**
    ```
-   NEXT_PUBLIC_API_URL=https://cms-backend.onrender.com/api/v1
+   NEXT_PUBLIC_API_URL=https://cms-backend-20v6.onrender.com/api/v1
    ```
+   **Replace `cms-backend-20v6` with your actual Render backend URL**
 
 4. **Click "Deploy"**
 
@@ -148,8 +155,9 @@ After backend is deployed:
 
 2. **Set Environment Variables:**
    ```
-   VITE_API_URL=https://cms-backend.onrender.com/api/v1
+   VITE_API_URL=https://cms-backend-20v6.onrender.com/api/v1
    ```
+   **Replace `cms-backend-20v6` with your actual Render backend URL**
 
 3. **Click "Deploy"**
 
@@ -159,12 +167,14 @@ After backend is deployed:
 
 After getting your Vercel URLs:
 
-1. Go to Render → Your backend service → Environment
+1. Go to Render → Your backend service (`cms-backend`) → Environment tab
 2. Update `CORS_ORIGIN`:
    ```
    CORS_ORIGIN=https://your-admin.vercel.app,https://your-website.vercel.app
    ```
-3. Save and redeploy
+   **Replace with your actual Vercel URLs**
+3. Click "Save Changes"
+4. Service will auto-redeploy (or manually redeploy)
 
 ### Step 7: Test Your Deployment
 
@@ -190,13 +200,15 @@ PORT=10000
 
 ### Website (Vercel)
 ```env
-NEXT_PUBLIC_API_URL=https://cms-backend.onrender.com/api/v1
+NEXT_PUBLIC_API_URL=https://cms-backend-20v6.onrender.com/api/v1
 ```
+**Replace `cms-backend-20v6` with your actual Render backend service name**
 
 ### Admin Panel (Vercel)
 ```env
-VITE_API_URL=https://cms-backend.onrender.com/api/v1
+VITE_API_URL=https://cms-backend-20v6.onrender.com/api/v1
 ```
+**Replace `cms-backend-20v6` with your actual Render backend service name**
 
 ---
 
@@ -226,9 +238,12 @@ VITE_API_URL=https://cms-backend.onrender.com/api/v1
 - Check build logs for errors
 
 ### Database Connection Issues
-- Use Internal Database URL from Render
-- Verify DATABASE_URL is correct
-- Check database is running
+- **Use Internal Database URL** from Render (NOT External)
+- Verify DATABASE_URL format: `postgresql://user:password@host/database`
+- Check database is running in Render dashboard
+- Ensure backend and database are in same region
+- Try Connection Pooling URL if direct connection fails
+- See `RENDER_DATABASE_FIX.md` for detailed troubleshooting
 
 ### CORS Errors
 - Update CORS_ORIGIN with exact Vercel URLs

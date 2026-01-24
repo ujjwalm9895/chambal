@@ -1,0 +1,115 @@
+{
+  "hash": "6df59bd7",
+  "configHash": "9317948d",
+  "lockfileHash": "4260fbf3",
+  "browserHash": "bc3e0be5",
+  "optimized": {
+    "react/jsx-dev-runtime": {
+      "src": "../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "fce2928f",
+      "needsInterop": true
+    },
+    "react": {
+      "src": "../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "d8ba8d6a",
+      "needsInterop": true
+    },
+    "react-dom/client": {
+      "src": "../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "1cf53c55",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../node_modules/react-router-dom/dist/index.js",
+      "file": "react-router-dom.js",
+      "fileHash": "148dc75f",
+      "needsInterop": false
+    },
+    "@mui/material/styles": {
+      "src": "../../node_modules/@mui/material/styles/index.js",
+      "file": "@mui_material_styles.js",
+      "fileHash": "67a42e58",
+      "needsInterop": false
+    },
+    "@mui/material/CssBaseline": {
+      "src": "../../node_modules/@mui/material/CssBaseline/index.js",
+      "file": "@mui_material_CssBaseline.js",
+      "fileHash": "e37cb49a",
+      "needsInterop": false
+    },
+    "axios": {
+      "src": "../../node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "438282a3",
+      "needsInterop": false
+    },
+    "@mui/material": {
+      "src": "../../node_modules/@mui/material/index.js",
+      "file": "@mui_material.js",
+      "fileHash": "9a24b862",
+      "needsInterop": false
+    },
+    "@mui/icons-material": {
+      "src": "../../node_modules/@mui/icons-material/esm/index.js",
+      "file": "@mui_icons-material.js",
+      "fileHash": "166c2958",
+      "needsInterop": false
+    },
+    "react-beautiful-dnd": {
+      "src": "../../node_modules/react-beautiful-dnd/dist/react-beautiful-dnd.esm.js",
+      "file": "react-beautiful-dnd.js",
+      "fileHash": "819c1b83",
+      "needsInterop": false
+    },
+    "react-quill": {
+      "src": "../../node_modules/react-quill/lib/index.js",
+      "file": "react-quill.js",
+      "fileHash": "449eeacb",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-HPX5QJWF": {
+      "file": "chunk-HPX5QJWF.js"
+    },
+    "chunk-TMKJMMJP": {
+      "file": "chunk-TMKJMMJP.js"
+    },
+    "chunk-ZIYUGMGG": {
+      "file": "chunk-ZIYUGMGG.js"
+    },
+    "chunk-7CKPTVTT": {
+      "file": "chunk-7CKPTVTT.js"
+    },
+    "chunk-FTRYLWBG": {
+      "file": "chunk-FTRYLWBG.js"
+    },
+    "chunk-736D7UKL": {
+      "file": "chunk-736D7UKL.js"
+    },
+    "chunk-7PJMM6MJ": {
+      "file": "chunk-7PJMM6MJ.js"
+    },
+    "chunk-OUNLLSM4": {
+      "file": "chunk-OUNLLSM4.js"
+    },
+    "chunk-I5LEEXGY": {
+      "file": "chunk-I5LEEXGY.js"
+    },
+    "chunk-V6C57QHM": {
+      "file": "chunk-V6C57QHM.js"
+    },
+    "chunk-RUKKB3VZ": {
+      "file": "chunk-RUKKB3VZ.js"
+    },
+    "chunk-65KY755N": {
+      "file": "chunk-65KY755N.js"
+    },
+    "chunk-V4OQ3NZ2": {
+      "file": "chunk-V4OQ3NZ2.js"
+    }
+  }
+}
