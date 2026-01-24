@@ -5,11 +5,10 @@ interface DashboardCardProps {
   title: string;
   value: string | number;
   icon: ReactNode;
-  color: string;
   bgColor: string;
 }
 
-export default function DashboardCard({ title, value, icon, color, bgColor }: DashboardCardProps) {
+export default function DashboardCard({ title, value, icon, bgColor }: DashboardCardProps) {
   return (
     <Paper
       elevation={0}
