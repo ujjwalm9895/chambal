@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Grid, Paper, Typography, Box, Card, CardContent } from '@mui/material';
+import { Grid, Typography, Box, Card, CardContent } from '@mui/material';
 import {
   Pages as PagesIcon,
   Image as ImageIcon,

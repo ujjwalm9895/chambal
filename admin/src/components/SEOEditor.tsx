@@ -1,4 +1,4 @@
-import { Paper, Typography, TextField, Box } from '@mui/material';
+import { Paper, Typography, TextField } from '@mui/material';
 
 interface SEOEditorProps {
   seoTitle: string;

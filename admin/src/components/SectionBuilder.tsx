@@ -9,12 +9,10 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
-  Grid,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -37,7 +35,6 @@ export default function SectionBuilder({
   pageId,
   sections,
   onChange,
-  onPageCreated,
 }: SectionBuilderProps) {
   const [openDialog, setOpenDialog] = useState(false);
   const [editingSection, setEditingSection] = useState<Section | null>(null);
