@@ -20,7 +20,6 @@ import { Page } from '../types';
 
 export default function PagesList() {
   const [pages, setPages] = useState<Page[]>([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,8 +32,6 @@ export default function PagesList() {
       setPages(response.data);
     } catch (error) {
       console.error('Failed to fetch pages:', error);
-    } finally {
-      setLoading(false);
     }
   };
 

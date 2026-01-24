@@ -6,7 +6,6 @@ import {
   MenuBook as MenuBookIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
-import { Page, Media, Menu } from '../types';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({

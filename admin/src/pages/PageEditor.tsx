@@ -12,16 +12,10 @@ import {
   Paper,
   Grid,
   IconButton,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from '@mui/material';
 import {
   Save as SaveIcon,
   ArrowBack as ArrowBackIcon,
-  Add as AddIcon,
-  Delete as DeleteIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 import { Page, Section } from '../types';
