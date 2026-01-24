@@ -5,6 +5,15 @@ export interface User {
   createdAt: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  color: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Page {
   id: string;
   title: string;
@@ -15,6 +24,25 @@ export interface Page {
   createdAt: string;
   updatedAt: string;
   sections?: Section[];
+}
+
+export interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  content?: string;
+  excerpt?: string;
+  featuredImage?: string;
+  status: 'DRAFT' | 'PENDING' | 'PUBLISHED' | 'SCHEDULED';
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  isSlider?: boolean;
+  isFeatured?: boolean;
+  isBreaking?: boolean;
+  isRecommended?: boolean;
+  categoryId?: string;
+  category?: Category;
 }
 
 export interface Section {

@@ -7,6 +7,8 @@ import { PagesModule } from './pages/pages.module';
 import { SectionsModule } from './sections/sections.module';
 import { MediaModule } from './media/media.module';
 import { MenusModule } from './menus/menus.module';
+import { PostsModule } from './posts/posts.module';
+import { CategoriesModule } from './categories/categories.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { MenusModule } from './menus/menus.module';
     AuthModule,
     UsersModule,
     PagesModule,
+    PostsModule,
+    CategoriesModule,
     SectionsModule,
     MediaModule,
     MenusModule,

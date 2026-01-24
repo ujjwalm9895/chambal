@@ -8,6 +8,31 @@ export interface Page {
   sections?: Section[];
 }
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  color: string;
+}
+
+export interface Post {
+  id: string;
+  title: string;
+  slug: string;
+  content?: string;
+  excerpt?: string;
+  featuredImage?: string;
+  status: 'DRAFT' | 'PENDING' | 'PUBLISHED' | 'SCHEDULED';
+  publishedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  isSlider?: boolean;
+  isFeatured?: boolean;
+  isBreaking?: boolean;
+  isRecommended?: boolean;
+  category?: Category;
+}
+
 export interface Section {
   id: string;
   pageId: string;

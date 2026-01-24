@@ -12,9 +12,44 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1';
+const normalizedApiUrl = rawApiUrl.replace(/\/+$/, '');
+const API_URL = normalizedApiUrl.endsWith('/api/v1')
+  ? normalizedApiUrl
+  : `${normalizedApiUrl}/api/v1`;
 
 axios.defaults.baseURL = API_URL;
+
+// Setup axios interceptor to attach token to all requests
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Setup axios interceptor to handle 401 errors (unauthorized)
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear auth data and redirect to login
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      delete axios.defaults.headers.common['Authorization'];
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  }
+);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);

@@ -89,11 +89,8 @@ Deploy your CMS using:
    
    **Important for DATABASE_URL:**
    - Use **Internal Database URL** from Render (not External)
-   - Format: `postgresql://user:password@host/database`
-   - Get it from: PostgreSQL service → Internal Database URL
-   - If connection fails, try Connection Pooling URL instead
-
-5. **Click "Create Web Service"**
+   - Format: `postgresql://user:password@host
+   
 
 6. **Wait for deployment** (first build takes ~5-10 minutes)
 

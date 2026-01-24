@@ -20,6 +20,13 @@ enum PageStatus {
   PUBLISHED
 }
 
+enum PostStatus {
+  DRAFT
+  PENDING
+  PUBLISHED
+  SCHEDULED
+}
+
 enum SectionType {
   HERO
   TEXT
@@ -38,9 +45,24 @@ model User {
 
   pagesCreated   Page[]  @relation("PageCreatedBy")
   pagesUpdated   Page[]  @relation("PageUpdatedBy")
+  postsCreated   Post[]  @relation("PostCreatedBy")
+  postsUpdated   Post[]  @relation("PostUpdatedBy")
   mediaUploaded  Media[] @relation("MediaUploadedBy")
 
   @@map("users")
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  color     String   @default("#007bff") // Hex color code for badges
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  posts     Post[]
+
+  @@map("categories")
 }
 
 model Page {
@@ -60,6 +82,34 @@ model Page {
   sections      Section[]
 
   @@map("pages")
+}
+
+model Post {
+  id            String     @id @default(uuid())
+  title         String
+  slug          String     @unique
+  content       String?    @db.Text
+  excerpt       String?    @db.Text
+  featuredImage String?    @map("featured_image")
+  status        PostStatus @default(DRAFT)
+  publishedAt   DateTime?  @map("published_at")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  createdById   String?    @map("created_by_id")
+  updatedById   String?    @map("updated_by_id")
+  categoryId    String?    @map("category_id")
+
+  // Flags for categorization
+  isSlider      Boolean    @default(false) @map("is_slider")
+  isFeatured    Boolean    @default(false) @map("is_featured")
+  isBreaking    Boolean    @default(false) @map("is_breaking")
+  isRecommended Boolean    @default(false) @map("is_recommended")
+
+  createdBy     User?      @relation("PostCreatedBy", fields: [createdById], references: [id])
+  updatedBy     User?      @relation("PostUpdatedBy", fields: [updatedById], references: [id])
+  category      Category?  @relation(fields: [categoryId], references: [id])
+
+  @@map("posts")
 }
 
 model Section {
@@ -97,7 +147,7 @@ model Media {
 model Menu {
   id        String     @id @default(uuid())
   name      String     @unique
-  location  String     @unique // e.g., "header", "footer"
+  location  String     @unique // e.g., "header", "footer", "top-bar"
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 

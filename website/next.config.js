@@ -11,7 +11,8 @@ const nextConfig = {
       },
     ],
   },
-  // Vercel deployment - no standalone output needed
+  // Disable ISR memory cache to ensure real-time updates
+  isrMemoryCacheSize: 0,
 }
 
 module.exports = nextConfig

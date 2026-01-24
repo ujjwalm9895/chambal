@@ -28,7 +28,6 @@ interface SectionBuilderProps {
   pageId: string;
   sections: Section[];
   onChange: (sections: Section[]) => void;
-  onPageCreated?: (pageId: string) => void;
 }
 
 export default function SectionBuilder({
@@ -41,9 +40,10 @@ export default function SectionBuilder({
   const [newSectionType, setNewSectionType] = useState<'HERO' | 'TEXT' | 'IMAGE' | 'CTA' | 'FAQ'>('TEXT');
 
   useEffect(() => {
-    if (pageId && sections.length > 0) {
+    if (pageId) {
       fetchSections();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageId]);
 
   const fetchSections = async () => {
@@ -186,6 +186,14 @@ export default function SectionBuilder({
           Add Section
         </Button>
       </Box>
+      
+      {!pageId && (
+        <Box sx={{ p: 2, mb: 2, bgcolor: 'info.light', borderRadius: 1 }}>
+          <Typography variant="body2" color="info.dark">
+            💡 <strong>Tip:</strong> Save the page first before adding sections.
+          </Typography>
+        </Box>
+      )}
 
       <DragDropContext onDragEnd={handleDragEnd}>
         <Droppable droppableId="sections">

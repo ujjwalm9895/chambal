@@ -34,43 +34,154 @@ export default function PageEditor() {
     seoDescription: '',
   });
   const [sections, setSections] = useState<Section[]>([]);
-  const [loading, setLoading] = useState(!isNew);
+  // Track if we just saved to prevent unnecessary fetches
+  const [justSaved, setJustSaved] = useState(false);
+  // For new pages, loading should always be false
+  const [loading, setLoading] = useState(isNew ? false : true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (!isNew) {
-      fetchPage();
+    // For new pages, don't fetch anything
+    if (isNew) {
+      setLoading(false);
+      setJustSaved(false);
+      return;
     }
+    
+    // If we just saved, don't fetch - we already have the data
+    if (justSaved && page.id === id) {
+      setLoading(false);
+      setJustSaved(false);
+      return;
+    }
+    
+    // Only fetch if we have a valid ID and don't have page data
+    if (id && id !== 'new' && (!page.id || page.id !== id)) {
+      fetchPage();
+    } else {
+      setLoading(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const fetchPage = async () => {
+    if (!id || id === 'new') {
+      setLoading(false);
+      return;
+    }
+    
+    // If we already have page data with this ID, don't fetch again
+    if (page.id === id && page.title) {
+      setLoading(false);
+      return;
+    }
+    
+    setLoading(true);
     try {
       const response = await axios.get(`/pages/${id}`);
       setPage(response.data);
       setSections(response.data.sections || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch page:', error);
-      alert('Failed to load page');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load page';
+      
+      if (error.response?.status === 401) {
+        alert('You are not authorized. Please login again.');
+        navigate('/login');
+      } else if (error.response?.status === 404) {
+        // If we have page data already, don't show error (might be timing issue after save)
+        if (!page.id || page.id !== id) {
+          // Only redirect if we don't have the page data
+          console.warn('Page not found, redirecting to pages list');
+          navigate('/pages');
+        } else {
+          // We have page data from save, just log the warning - don't show error
+          console.warn('Page fetch returned 404 but we have local data - this is OK after save');
+          setLoading(false);
+        }
+      } else {
+        alert(`Failed to load page: ${errorMessage}\n\nPlease check:\n1. Backend is running\n2. You are logged in\n3. Page ID is valid`);
+      }
     } finally {
       setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    // Validate required fields
+    if (!page.title || !page.slug) {
+      alert('Please fill in Title and Slug fields');
+      return;
+    }
+
     setSaving(true);
     try {
       let savedPage;
-      if (isNew) {
-        savedPage = await axios.post('/pages', page);
-        navigate(`/pages/${savedPage.data.id}`);
+      // If it's a new page AND we haven't saved it yet (no page.id), create it
+      // Otherwise, update the existing page (using page.id)
+      if (isNew && !page.id) {
+        savedPage = await axios.post('/pages', {
+          title: page.title,
+          slug: page.slug,
+          status: page.status || 'DRAFT',
+          seoTitle: page.seoTitle || undefined,
+          seoDescription: page.seoDescription || undefined,
+        });
+        
+        // Get the saved page data
+        const savedPageData = savedPage.data;
+        
+        // Mark that we just saved to prevent unnecessary fetch
+        setJustSaved(true);
+        
+        // Update local state immediately with the saved data (including ID)
+        setPage({
+          ...savedPageData,
+          id: savedPageData.id,
+        });
+        
+        if (savedPageData.sections) {
+          setSections(savedPageData.sections);
+        }
+        
+        // Update URL without navigation to avoid triggering useEffect
+        // This keeps us on the same component instance
+        window.history.replaceState({}, '', `/pages/${savedPageData.id}`);
+        
+        alert('Page saved successfully! You can now add sections.');
       } else {
-        savedPage = await axios.patch(`/pages/${id}`, page);
+        // Use page.id if available (from previous save), otherwise use id from params
+        const targetId = page.id || id;
+        savedPage = await axios.patch(`/pages/${targetId}`, {
+          title: page.title,
+          slug: page.slug,
+          status: page.status,
+          seoTitle: page.seoTitle || undefined,
+          seoDescription: page.seoDescription || undefined,
+        });
+        setPage(savedPage.data);
+        if (savedPage.data.sections) {
+          setSections(savedPage.data.sections);
+        }
+        alert('Page updated successfully!');
       }
-      setPage(savedPage.data);
-      alert('Page saved successfully!');
     } catch (error: any) {
       console.error('Failed to save page:', error);
-      alert(error.response?.data?.message || 'Failed to save page');
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to save page';
+      
+      if (error.response?.status === 401) {
+        alert('You are not authorized. Please login again.');
+        navigate('/login');
+      } else if (error.response?.status === 409) {
+        alert(`Error: ${errorMessage}\n\nThis slug already exists. Please choose a different slug.`);
+      } else if (error.response?.status === 404) {
+        // 404 shouldn't happen on save - page should be created
+        // This might indicate backend issue
+        console.error('404 error on save - backend issue?', error);
+        alert(`Error: Unable to save page. Please check:\n1. Backend is running on http://localhost:3000\n2. You are logged in\n3. Check browser console (F12) for details`);
+      } else {
+        alert(`Error: ${errorMessage}\n\nPlease check:\n1. Backend is running on http://localhost:3000\n2. You are logged in\n3. All required fields are filled\n4. Check browser console (F12) for more details`);
+      }
     } finally {
       setSaving(false);
     }
@@ -80,8 +191,13 @@ export default function PageEditor() {
     setSections(updatedSections);
   };
 
-  if (loading) {
-    return <Typography>Loading...</Typography>;
+  // Only show loading for existing pages, not for new pages
+  if (loading && !isNew) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+        <Typography>Loading page...</Typography>
+      </Box>
+    );
   }
 
   return (
@@ -132,12 +248,9 @@ export default function PageEditor() {
           </Paper>
 
           <SectionBuilder
-            pageId={isNew ? '' : id!}
+            pageId={page.id || id || ''}
             sections={sections}
             onChange={handleSectionsChange}
-            onPageCreated={isNew ? (pageId) => {
-              setPage({ ...page, id: pageId });
-            } : undefined}
           />
         </Grid>
 
