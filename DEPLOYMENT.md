@@ -69,6 +69,11 @@ Deploy your CMS using:
    - Environment: `Node`
    - Build Command: `npm install && npm run prisma:generate && npm run build`
    - Start Command: `npm run start:prod`
+   
+   **Note:** The build outputs to `dist/src/main.js`, so the start command uses that path.
+   
+   **If build fails, try:**
+   - Build Command: `npm ci && npm run prisma:generate && npm run build`
 
 4. **Set Environment Variables:**
    ```
