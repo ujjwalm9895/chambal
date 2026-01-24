@@ -15,7 +15,7 @@ export default function Layout() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#ecf0f5' }}>
-      <Topbar onSidebarToggle={handleSidebarToggle} />
+      <Topbar onSidebarToggle={handleSidebarToggle} sidebarOpen={isDesktop ? sidebarOpen : false} />
       
       <Sidebar
         open={isDesktop ? sidebarOpen : !sidebarOpen} // Logic: On desktop, toggle hides/shows. On mobile, toggle shows/hides.

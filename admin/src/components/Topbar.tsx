@@ -25,9 +25,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface TopbarProps {
   onSidebarToggle: () => void;
+  sidebarOpen: boolean;
 }
 
-export default function Topbar({ onSidebarToggle }: TopbarProps) {
+export default function Topbar({ onSidebarToggle, sidebarOpen }: TopbarProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -49,10 +50,15 @@ export default function Topbar({ onSidebarToggle }: TopbarProps) {
     <AppBar
       position="fixed"
       sx={{
-        zIndex: (theme) => theme.zIndex.drawer + 1,
         bgcolor: '#fff',
         color: '#333',
         boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+        width: { md: sidebarOpen ? `calc(100% - 250px)` : '100%' },
+        ml: { md: sidebarOpen ? `250px` : 0 },
+        transition: (theme) => theme.transitions.create(['width', 'margin'], {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.leavingScreen,
+        }),
       }}
     >
       <Toolbar>
@@ -76,7 +82,7 @@ export default function Topbar({ onSidebarToggle }: TopbarProps) {
             color="success"
             size="small"
             startIcon={<LanguageIcon />}
-            href="/"
+            href={import.meta.env.VITE_WEBSITE_URL || 'http://localhost:3002'}
             target="_blank"
             sx={{ 
               textTransform: 'none',
