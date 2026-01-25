@@ -7,7 +7,6 @@ import {
   Button,
   Paper,
   Grid,
-  IconButton,
   CircularProgress,
   FormControlLabel,
   Checkbox,
@@ -20,11 +19,8 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  OutlinedInput,
 } from '@mui/material';
 import {
-  Save as SaveIcon,
-  ArrowBack as ArrowBackIcon,
   CloudUpload as CloudUploadIcon,
   Image as ImageIcon,
   Menu as MenuIcon,
@@ -75,10 +71,8 @@ export default function PostEditor() {
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileUploadRef = useRef<HTMLInputElement>(null);
-  const [uploading, setUploading] = useState(false);
   const [isScheduled, setIsScheduled] = useState(false);
 
   useEffect(() => {
@@ -123,7 +117,6 @@ export default function PostEditor() {
   };
 
   const handleImageUpload = async (file: File) => {
-    setUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -134,13 +127,10 @@ export default function PostEditor() {
     } catch (error) {
       console.error('Failed to upload image:', error);
       alert('Failed to upload image');
-    } finally {
-      setUploading(false);
     }
   };
 
   const handleFileUpload = async (file: File) => {
-    setUploading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -151,28 +141,9 @@ export default function PostEditor() {
     } catch (error) {
       console.error('Failed to upload file:', error);
       alert('Failed to upload file');
-    } finally {
-      setUploading(false);
     }
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file && file.type.startsWith('image/')) {
-      handleImageUpload(file);
-    }
-  };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

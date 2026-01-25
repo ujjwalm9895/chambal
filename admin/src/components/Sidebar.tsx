@@ -32,7 +32,6 @@ import {
   Drafts as DraftsIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
-  Menu as MenuIcon,
   Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
