@@ -22,6 +22,14 @@ export class CreatePostDto {
   @IsOptional()
   featuredImage?: string;
 
+  @IsString()
+  @IsOptional()
+  imageDescription?: string;
+
+  @IsString()
+  @IsOptional()
+  metaKeywords?: string;
+
   @IsOptional()
   @IsEnum(PostStatus)
   status?: PostStatus;

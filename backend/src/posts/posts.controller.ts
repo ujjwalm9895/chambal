@@ -8,7 +8,12 @@ import {
   Delete,
   UseGuards,
   Query,
+  UseInterceptors,
+  UploadedFile,
+  Res,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 import { PostsService } from './posts.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
@@ -83,5 +88,33 @@ export class PostsController {
   @Roles(UserRole.ADMIN)
   remove(@Param('id') id: string) {
     return this.postsService.remove(id);
+  }
+
+  @Post('bulk-upload')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  @UseInterceptors(FileInterceptor('file'))
+  async bulkUpload(@UploadedFile() file: Express.Multer.File, @CurrentUser() user: any) {
+    return this.postsService.bulkUpload(file, user.id);
+  }
+
+  @Get('bulk-upload/template')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  async getTemplate(@Res() res: Response) {
+    const csv = this.postsService.generateTemplate();
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=bulk-post-template.csv');
+    res.send(csv);
+  }
+
+  @Get('bulk-upload/example')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN, UserRole.EDITOR)
+  async getExample(@Res() res: Response) {
+    const csv = this.postsService.generateExample();
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=bulk-post-example.csv');
+    res.send(csv);
   }
 }

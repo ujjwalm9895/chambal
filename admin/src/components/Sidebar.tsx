@@ -9,6 +9,8 @@ import {
   ListItemText,
   Avatar,
   Collapse,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import {
   Dashboard as DashboardIcon,
@@ -28,20 +30,27 @@ import {
   PendingActions as PendingIcon,
   Schedule as ScheduleIcon,
   Drafts as DraftsIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  Menu as MenuIcon,
+  Settings as SettingsIcon,
 } from '@mui/icons-material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useState } from 'react';
 
 const drawerWidth = 250;
+const collapsedWidth = 64;
 
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
   variant: 'permanent' | 'persistent' | 'temporary';
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export default function Sidebar({ open, onClose, variant }: SidebarProps) {
+export default function Sidebar({ open, onClose, variant, collapsed = false, onToggleCollapse }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -75,7 +84,19 @@ export default function Sidebar({ open, onClose, variant }: SidebarProps) {
       icon: <PagesIcon />,
       path: '/pages',
     },
+    {
+      text: 'Site Settings',
+      icon: <SettingsIcon />,
+      path: '/site-settings',
+    },
+    {
+      text: 'Advertisements',
+      icon: <ImageIcon />,
+      path: '/advertisements',
+    },
   ];
+
+  const currentWidth = collapsed ? collapsedWidth : drawerWidth;
 
   return (
     <Drawer
@@ -83,155 +104,234 @@ export default function Sidebar({ open, onClose, variant }: SidebarProps) {
       open={open}
       onClose={onClose}
       sx={{
-        width: drawerWidth,
+        width: currentWidth,
         flexShrink: 0,
+        transition: (theme) => theme.transitions.create('width', {
+          easing: theme.transitions.easing.sharp,
+          duration: theme.transitions.duration.enteringScreen,
+        }),
         '& .MuiDrawer-paper': {
-          width: drawerWidth,
+          width: currentWidth,
           boxSizing: 'border-box',
-          bgcolor: '#222d32',
+          bgcolor: '#2c3b41',
           color: '#b8c7ce',
           borderRight: 'none',
+          overflowX: 'hidden',
+          transition: (theme) => theme.transitions.create('width', {
+            easing: theme.transitions.easing.sharp,
+            duration: theme.transitions.duration.enteringScreen,
+          }),
         },
       }}
     >
-      {/* Brand Logo */}
-      <Box
-        sx={{
-          height: 64,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          bgcolor: '#367fa9',
-          color: '#fff',
-          fontWeight: 'bold',
-          fontSize: '1.2rem',
-        }}
-      >
-        Chambal Sandesh
-      </Box>
-
-      {/* User Panel */}
-      <Box
-        sx={{
-          p: 2,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 2,
-          borderBottom: '1px solid #1a2226',
-        }}
-      >
-        <Avatar
-          src="/user-avatar.png" // Placeholder
-          alt={user?.email}
-          sx={{ width: 45, height: 45 }}
-        >
-          {user?.email?.charAt(0).toUpperCase()}
-        </Avatar>
-        <Box>
-          <Typography variant="body2" color="#fff" fontWeight="bold">
-            {user?.email?.split('@')[0]}
-          </Typography>
-          <Box display="flex" alignItems="center" gap={0.5}>
-            <Box
-              sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                bgcolor: '#3c763d',
-              }}
-            />
-            <Typography variant="caption">online</Typography>
-          </Box>
-        </Box>
-      </Box>
-
-      {/* Navigation */}
-      <Box sx={{ overflow: 'auto', mt: 1 }}>
-        <Typography
-          variant="caption"
+      {/* Collapse Toggle Button */}
+      {onToggleCollapse && (
+        <Box
           sx={{
-            px: 2,
-            py: 1,
-            display: 'block',
-            bgcolor: '#1a2226',
-            color: '#4b646f',
-            textTransform: 'uppercase',
-            fontWeight: 'bold',
+            height: 64,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'flex-end',
+            pr: collapsed ? 0 : 2,
+            borderBottom: '1px solid #1a2226',
           }}
         >
-          Main Navigation
-        </Typography>
-
-        <List component="nav" sx={{ p: 0 }}>
-          {/* Dashboard */}
-          <ListItem disablePadding sx={{ display: 'block' }}>
-            <ListItemButton
-              selected={isActive('/dashboard')}
-              onClick={() => navigate('/dashboard')}
+          <Tooltip title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'} placement="right">
+            <IconButton
+              onClick={onToggleCollapse}
               sx={{
-                minHeight: 48,
-                '&.Mui-selected': {
-                  bgcolor: '#1e282c',
-                  borderLeft: '3px solid #3c8dbc',
-                  color: '#fff',
-                  '&:hover': { bgcolor: '#1e282c' },
-                },
+                color: '#b8c7ce',
                 '&:hover': {
                   bgcolor: '#1e282c',
                   color: '#fff',
                 },
               }}
             >
-              <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
-                <DashboardIcon />
-              </ListItemIcon>
-              <ListItemText primary="Home" />
-            </ListItemButton>
-          </ListItem>
+              {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            </IconButton>
+          </Tooltip>
+        </Box>
+      )}
 
-          {/* Add Post */}
-          <ListItem disablePadding sx={{ display: 'block' }}>
-            <ListItemButton
-              onClick={() => navigate('/posts/new')}
+      {/* User Panel - Only show when expanded */}
+      {!collapsed && (
+        <Box
+          sx={{
+            p: 2,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 2,
+            borderBottom: '1px solid #1a2226',
+          }}
+        >
+          <Avatar
+            src="/user-avatar.png"
+            alt={user?.email}
+            sx={{ width: 45, height: 45 }}
+          >
+            {user?.email?.charAt(0).toUpperCase()}
+          </Avatar>
+          <Box>
+            <Typography variant="body2" color="#fff" fontWeight="bold">
+              {user?.email?.split('@')[0]}
+            </Typography>
+            <Box display="flex" alignItems="center" gap={0.5}>
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  bgcolor: '#3c763d',
+                }}
+              />
+              <Typography variant="caption">online</Typography>
+            </Box>
+          </Box>
+        </Box>
+      )}
+
+      {/* Avatar only when collapsed */}
+      {collapsed && (
+        <Box
+          sx={{
+            p: 1,
+            display: 'flex',
+            justifyContent: 'center',
+            borderBottom: '1px solid #1a2226',
+          }}
+        >
+          <Tooltip title={user?.email || 'User'} placement="right">
+            <Avatar
               sx={{
-                '&:hover': { bgcolor: '#1e282c', color: '#fff' },
+                width: 40,
+                height: 40,
+                bgcolor: '#367fa9',
+                cursor: 'pointer',
               }}
             >
-              <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
-                <AddIcon />
-              </ListItemIcon>
-              <ListItemText primary="Add Post" />
-            </ListItemButton>
-          </ListItem>
+              {user?.email?.charAt(0).toUpperCase()}
+            </Avatar>
+          </Tooltip>
+        </Box>
+      )}
 
-          {/* Bulk Upload */}
-          <ListItem disablePadding sx={{ display: 'block' }}>
-            <ListItemButton
-              sx={{
-                '&:hover': { bgcolor: '#1e282c', color: '#fff' },
-              }}
-            >
-              <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
-                <FileUploadIcon />
-              </ListItemIcon>
-              <ListItemText primary="Bulk Post Upload" />
-            </ListItemButton>
-          </ListItem>
-
-          {/* Posts Dropdown */}
-          <ListItemButton
-            onClick={() => setPostsOpen(!postsOpen)}
+      {/* Navigation */}
+      <Box sx={{ overflow: 'auto', mt: 1 }}>
+        {!collapsed && (
+          <Typography
+            variant="caption"
             sx={{
-              '&:hover': { bgcolor: '#1e282c', color: '#fff' },
+              px: 2,
+              py: 1,
+              display: 'block',
+              bgcolor: '#1a2226',
+              color: '#4b646f',
+              textTransform: 'uppercase',
+              fontWeight: 'bold',
             }}
           >
-            <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
-              <ArticleIcon />
-            </ListItemIcon>
-            <ListItemText primary="Posts" />
-            {postsOpen ? <ExpandLess /> : <ExpandMore />}
-          </ListItemButton>
-          <Collapse in={postsOpen} timeout="auto" unmountOnExit>
+            Main Navigation
+          </Typography>
+        )}
+
+        <List component="nav" sx={{ p: 0 }}>
+          {/* Dashboard */}
+          <Tooltip title={collapsed ? 'Home' : ''} placement="right">
+            <ListItem disablePadding sx={{ display: 'block' }}>
+              <ListItemButton
+                selected={isActive('/dashboard')}
+                onClick={() => navigate('/dashboard')}
+                sx={{
+                  minHeight: 48,
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  px: collapsed ? 1 : 2,
+                  '&.Mui-selected': {
+                    bgcolor: '#1e282c',
+                    borderLeft: collapsed ? 'none' : '3px solid #3c8dbc',
+                    color: '#fff',
+                    '&:hover': { bgcolor: '#1e282c' },
+                  },
+                  '&:hover': {
+                    bgcolor: '#1e282c',
+                    color: '#fff',
+                  },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: collapsed ? 0 : 40, justifyContent: 'center', color: 'inherit' }}>
+                  <DashboardIcon />
+                </ListItemIcon>
+                {!collapsed && <ListItemText primary="Home" />}
+              </ListItemButton>
+            </ListItem>
+          </Tooltip>
+
+          {/* Add Post */}
+          <Tooltip title={collapsed ? 'Add Post' : ''} placement="right">
+            <ListItem disablePadding sx={{ display: 'block' }}>
+              <ListItemButton
+                onClick={() => navigate('/posts/new')}
+                sx={{
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  px: collapsed ? 1 : 2,
+                  '&:hover': { bgcolor: '#1e282c', color: '#fff' },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: collapsed ? 0 : 40, justifyContent: 'center', color: 'inherit' }}>
+                  <AddIcon />
+                </ListItemIcon>
+                {!collapsed && <ListItemText primary="Add Post" />}
+              </ListItemButton>
+            </ListItem>
+          </Tooltip>
+
+          {/* Bulk Upload */}
+          <Tooltip title={collapsed ? 'Bulk Upload' : ''} placement="right">
+            <ListItem disablePadding sx={{ display: 'block' }}>
+              <ListItemButton
+                onClick={() => navigate('/posts/bulk-upload')}
+                sx={{
+                  justifyContent: collapsed ? 'center' : 'flex-start',
+                  px: collapsed ? 1 : 2,
+                  '&:hover': { bgcolor: '#1e282c', color: '#fff' },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: collapsed ? 0 : 40, justifyContent: 'center', color: 'inherit' }}>
+                  <FileUploadIcon />
+                </ListItemIcon>
+                {!collapsed && <ListItemText primary="Bulk Post Upload" />}
+              </ListItemButton>
+            </ListItem>
+          </Tooltip>
+
+          {/* Posts Dropdown */}
+          <Tooltip title={collapsed ? 'Posts' : ''} placement="right">
+            <ListItemButton
+              onClick={() => {
+                if (collapsed) {
+                  navigate('/posts');
+                } else {
+                  setPostsOpen(!postsOpen);
+                }
+              }}
+              sx={{
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                px: collapsed ? 1 : 2,
+                '&:hover': { bgcolor: '#1e282c', color: '#fff' },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: collapsed ? 0 : 40, justifyContent: 'center', color: 'inherit' }}>
+                <ArticleIcon />
+              </ListItemIcon>
+              {!collapsed && (
+                <>
+                  <ListItemText primary="Posts" />
+                  {postsOpen ? <ExpandLess /> : <ExpandMore />}
+                </>
+              )}
+            </ListItemButton>
+          </Tooltip>
+          {!collapsed && (
+            <Collapse in={postsOpen} timeout="auto" unmountOnExit>
             <List component="div" disablePadding sx={{ bgcolor: '#2c3b41' }}>
               <ListItemButton
                 sx={{ pl: 4, '&:hover': { color: '#fff' } }}
@@ -307,33 +407,38 @@ export default function Sidebar({ open, onClose, variant }: SidebarProps) {
               </ListItemButton>
             </List>
           </Collapse>
+          )}
 
           {/* Other Items */}
           {menuItems.slice(1).map((item) => (
-            <ListItem key={item.text} disablePadding sx={{ display: 'block' }}>
-              <ListItemButton
-                selected={isActive(item.path)}
-                onClick={() => navigate(item.path)}
-                sx={{
-                  minHeight: 48,
-                  '&.Mui-selected': {
-                    bgcolor: '#1e282c',
-                    borderLeft: '3px solid #3c8dbc',
-                    color: '#fff',
-                    '&:hover': { bgcolor: '#1e282c' },
-                  },
-                  '&:hover': {
-                    bgcolor: '#1e282c',
-                    color: '#fff',
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText primary={item.text} />
-              </ListItemButton>
-            </ListItem>
+            <Tooltip key={item.text} title={collapsed ? item.text : ''} placement="right">
+              <ListItem disablePadding sx={{ display: 'block' }}>
+                <ListItemButton
+                  selected={isActive(item.path)}
+                  onClick={() => navigate(item.path)}
+                  sx={{
+                    minHeight: 48,
+                    justifyContent: collapsed ? 'center' : 'flex-start',
+                    px: collapsed ? 1 : 2,
+                    '&.Mui-selected': {
+                      bgcolor: '#1e282c',
+                      borderLeft: collapsed ? 'none' : '3px solid #3c8dbc',
+                      color: '#fff',
+                      '&:hover': { bgcolor: '#1e282c' },
+                    },
+                    '&:hover': {
+                      bgcolor: '#1e282c',
+                      color: '#fff',
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: collapsed ? 0 : 40, justifyContent: 'center', color: 'inherit' }}>
+                    {item.icon}
+                  </ListItemIcon>
+                  {!collapsed && <ListItemText primary={item.text} />}
+                </ListItemButton>
+              </ListItem>
+            </Tooltip>
           ))}
         </List>
       </Box>

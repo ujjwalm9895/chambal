@@ -9,6 +9,8 @@ import { MediaModule } from './media/media.module';
 import { MenusModule } from './menus/menus.module';
 import { PostsModule } from './posts/posts.module';
 import { CategoriesModule } from './categories/categories.module';
+import { SiteSettingsModule } from './site-settings/site-settings.module';
+import { AdvertisementsModule } from './advertisements/advertisements.module';
 
 @Module({
   imports: [
@@ -25,6 +27,8 @@ import { CategoriesModule } from './categories/categories.module';
     SectionsModule,
     MediaModule,
     MenusModule,
+    SiteSettingsModule,
+    AdvertisementsModule,
   ],
 })
 export class AppModule {}

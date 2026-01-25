@@ -6,12 +6,14 @@ interface DashboardCardProps {
   value: string | number;
   icon: ReactNode;
   bgColor: string;
+  onClick?: () => void;
 }
 
-export default function DashboardCard({ title, value, icon, bgColor }: DashboardCardProps) {
+export default function DashboardCard({ title, value, icon, bgColor, onClick }: DashboardCardProps) {
   return (
     <Paper
       elevation={0}
+      onClick={onClick}
       sx={{
         p: 3,
         display: 'flex',
@@ -25,6 +27,7 @@ export default function DashboardCard({ title, value, icon, bgColor }: Dashboard
         borderRadius: 1,
         boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
         transition: 'transform 0.2s',
+        cursor: onClick ? 'pointer' : 'default',
         '&:hover': {
           transform: 'translateY(-2px)',
           boxShadow: '0 4px 15px rgba(0,0,0,0.2)',

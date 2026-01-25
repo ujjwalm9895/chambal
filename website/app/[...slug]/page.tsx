@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { Metadata } from 'next';
 import { renderSection } from '@/lib/sectionRenderer';
+import Breadcrumbs from '@/components/Breadcrumbs';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
 
@@ -50,14 +51,26 @@ export default async function DynamicPage({
     notFound();
   }
 
+  const slugParts = slug.split('/');
+  const breadcrumbItems = [
+    { label: 'Home', href: '/' },
+    ...slugParts.map((part, index) => ({
+      label: part.charAt(0).toUpperCase() + part.slice(1).replace(/-/g, ' '),
+      href: index === slugParts.length - 1 ? undefined : `/${slugParts.slice(0, index + 1).join('/')}`,
+    })),
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-4xl font-bold mb-8">{page.title}</h1>
-      <div className="space-y-8">
-        {page.sections?.map((section: any) => (
-          <div key={section.id}>{renderSection(section)}</div>
-        ))}
+    <>
+      <Breadcrumbs items={breadcrumbItems} />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-4xl font-bold mb-8">{page.title}</h1>
+        <div className="space-y-8">
+          {page.sections?.map((section: any) => (
+            <div key={section.id}>{renderSection(section)}</div>
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 }

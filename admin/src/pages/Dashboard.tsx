@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Grid, Typography, Box, CircularProgress } from '@mui/material';
 import {
   Article as ArticleIcon,
@@ -10,6 +11,7 @@ import axios from 'axios';
 import DashboardCard from '../components/DashboardCard';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const [stats, setStats] = useState({
     totalPosts: 0,
     pendingPosts: 0,
@@ -54,24 +56,28 @@ export default function Dashboard() {
       value: stats.totalPosts,
       icon: <ArticleIcon />,
       bgColor: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)',
+      path: '/posts',
     },
     {
       title: 'Pending Posts',
       value: stats.pendingPosts,
       icon: <VisibilityIcon />,
       bgColor: 'linear-gradient(135deg, #d32f2f 0%, #b71c1c 100%)',
+      path: '/posts?status=PENDING',
     },
     {
       title: 'Drafts',
       value: stats.drafts,
       icon: <EditIcon />,
       bgColor: 'linear-gradient(135deg, #7b1fa2 0%, #4a148c 100%)',
+      path: '/posts?status=DRAFT',
     },
     {
       title: 'Scheduled',
       value: stats.scheduled,
       icon: <ScheduleIcon />,
       bgColor: 'linear-gradient(135deg, #f57c00 0%, #e65100 100%)',
+      path: '/posts?status=SCHEDULED',
     },
   ];
 
@@ -95,6 +101,7 @@ export default function Dashboard() {
               value={card.value}
               icon={card.icon}
               bgColor={card.bgColor}
+              onClick={() => navigate(card.path)}
             />
           </Grid>
         ))}

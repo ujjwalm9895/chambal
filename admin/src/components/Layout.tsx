@@ -8,19 +8,30 @@ export default function Layout() {
   const theme = useTheme();
   const isDesktop = useMediaQuery(theme.breakpoints.up('md'));
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   const handleSidebarToggle = () => {
     setSidebarOpen(!sidebarOpen);
   };
 
+  const handleSidebarCollapse = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#ecf0f5' }}>
-      <Topbar onSidebarToggle={handleSidebarToggle} sidebarOpen={isDesktop ? sidebarOpen : false} />
+      <Topbar 
+        onSidebarToggle={handleSidebarToggle} 
+        sidebarOpen={isDesktop ? sidebarOpen : false}
+        sidebarCollapsed={isDesktop ? sidebarCollapsed : false}
+      />
       
       <Sidebar
         open={isDesktop ? sidebarOpen : !sidebarOpen} // Logic: On desktop, toggle hides/shows. On mobile, toggle shows/hides.
         variant={isDesktop ? 'persistent' : 'temporary'}
         onClose={() => setSidebarOpen(false)}
+        collapsed={isDesktop ? sidebarCollapsed : false}
+        onToggleCollapse={isDesktop ? handleSidebarCollapse : undefined}
       />
 
       <Box
@@ -34,7 +45,7 @@ export default function Layout() {
             duration: theme.transitions.duration.leavingScreen,
           }),
           ...(isDesktop && sidebarOpen && {
-            width: `calc(100% - 250px)`,
+            width: sidebarCollapsed ? `calc(100% - 64px)` : `calc(100% - 250px)`,
             ml: 0,
             transition: theme.transitions.create(['margin', 'width'], {
               easing: theme.transitions.easing.easeOut,

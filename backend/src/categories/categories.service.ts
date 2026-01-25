@@ -53,4 +53,13 @@ export class CategoriesService {
       where: { id },
     });
   }
+
+  async exportToCSV(): Promise<string> {
+    const categories = await this.findAll();
+    let csv = 'id,name,slug,color\n';
+    categories.forEach((cat) => {
+      csv += `"${cat.id}","${cat.name}","${cat.slug}","${cat.color}"\n`;
+    });
+    return csv;
+  }
 }

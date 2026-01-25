@@ -57,3 +57,16 @@ export interface MenuItem {
   parentId?: string;
   children?: MenuItem[];
 }
+
+export interface Advertisement {
+  id: string;
+  title: string;
+  description?: string;
+  imageUrl: string;
+  linkUrl?: string;
+  position: 'HEADER' | 'SIDEBAR' | 'FOOTER' | 'IN_CONTENT' | 'BOTTOM_BANNER';
+  status: 'ACTIVE' | 'INACTIVE';
+  order: number;
+  startDate?: string;
+  endDate?: string;
+}

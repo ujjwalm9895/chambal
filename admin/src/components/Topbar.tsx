@@ -26,9 +26,10 @@ import { useNavigate } from 'react-router-dom';
 interface TopbarProps {
   onSidebarToggle: () => void;
   sidebarOpen: boolean;
+  sidebarCollapsed?: boolean;
 }
 
-export default function Topbar({ onSidebarToggle, sidebarOpen }: TopbarProps) {
+export default function Topbar({ onSidebarToggle, sidebarOpen, sidebarCollapsed = false }: TopbarProps) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -53,8 +54,8 @@ export default function Topbar({ onSidebarToggle, sidebarOpen }: TopbarProps) {
         bgcolor: '#fff',
         color: '#333',
         boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
-        width: { md: sidebarOpen ? `calc(100% - 250px)` : '100%' },
-        ml: { md: sidebarOpen ? `250px` : 0 },
+        width: { md: sidebarOpen ? (sidebarCollapsed ? `calc(100% - 64px)` : `calc(100% - 250px)`) : '100%' },
+        ml: { md: sidebarOpen ? (sidebarCollapsed ? `64px` : `250px`) : 0 },
         transition: (theme) => theme.transitions.create(['width', 'margin'], {
           easing: theme.transitions.easing.sharp,
           duration: theme.transitions.duration.leavingScreen,

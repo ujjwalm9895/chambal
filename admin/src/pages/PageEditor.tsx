@@ -22,6 +22,16 @@ import { Page, Section } from '../types';
 import SectionBuilder from '../components/SectionBuilder';
 import SEOEditor from '../components/SEOEditor';
 
+// Helper function to generate slug from title
+const generateSlug = (title: string): string => {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '') // Remove special characters
+    .replace(/[\s_-]+/g, '-') // Replace spaces, underscores, and multiple hyphens with single hyphen
+    .replace(/^-+|-+$/g, ''); // Remove leading/trailing hyphens
+};
+
 export default function PageEditor() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -39,6 +49,7 @@ export default function PageEditor() {
   // For new pages, loading should always be false
   const [loading, setLoading] = useState(isNew ? false : true);
   const [saving, setSaving] = useState(false);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   useEffect(() => {
     // For new pages, don't fetch anything
@@ -64,6 +75,14 @@ export default function PageEditor() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  // Auto-generate slug from title when title changes (only if slug hasn't been manually edited)
+  useEffect(() => {
+    if (page.title && !slugManuallyEdited && (isNew || !page.slug)) {
+      const autoSlug = generateSlug(page.title);
+      setPage({ ...page, slug: autoSlug });
+    }
+  }, [page.title, isNew]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const fetchPage = async () => {
     if (!id || id === 'new') {
       setLoading(false);
@@ -81,6 +100,7 @@ export default function PageEditor() {
       const response = await axios.get(`/pages/${id}`);
       setPage(response.data);
       setSections(response.data.sections || []);
+      setSlugManuallyEdited(false); // Reset flag when loading existing page
     } catch (error: any) {
       console.error('Failed to fetch page:', error);
       const errorMessage = error.response?.data?.message || error.message || 'Failed to load page';
@@ -221,7 +241,16 @@ export default function PageEditor() {
               fullWidth
               label="Title"
               value={page.title}
-              onChange={(e) => setPage({ ...page, title: e.target.value })}
+              onChange={(e) => {
+                const newTitle = e.target.value;
+                // Auto-generate slug if it hasn't been manually edited
+                if (!slugManuallyEdited) {
+                  const autoSlug = generateSlug(newTitle);
+                  setPage({ ...page, title: newTitle, slug: autoSlug });
+                } else {
+                  setPage({ ...page, title: newTitle });
+                }
+              }}
               margin="normal"
               required
             />
@@ -229,10 +258,13 @@ export default function PageEditor() {
               fullWidth
               label="Slug"
               value={page.slug}
-              onChange={(e) => setPage({ ...page, slug: e.target.value })}
+              onChange={(e) => {
+                setSlugManuallyEdited(true);
+                setPage({ ...page, slug: e.target.value });
+              }}
               margin="normal"
               required
-              helperText="URL-friendly identifier (e.g., 'about-us')"
+              helperText="URL-friendly identifier (auto-generated from title, or edit manually)"
             />
             <FormControl fullWidth margin="normal">
               <InputLabel>Status</InputLabel>

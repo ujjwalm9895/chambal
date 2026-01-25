@@ -33,6 +33,8 @@ export interface Post {
   content?: string;
   excerpt?: string;
   featuredImage?: string;
+  imageDescription?: string;
+  metaKeywords?: string;
   status: 'DRAFT' | 'PENDING' | 'PUBLISHED' | 'SCHEDULED';
   publishedAt?: string;
   createdAt: string;
@@ -81,4 +83,17 @@ export interface MenuItem {
   order: number;
   parentId?: string;
   children?: MenuItem[];
+}
+
+export interface Advertisement {
+  id: string;
+  title: string;
+  description?: string;
+  imageUrl: string;
+  linkUrl?: string;
+  position: 'HEADER' | 'SIDEBAR' | 'FOOTER' | 'IN_CONTENT' | 'BOTTOM_BANNER';
+  status: 'ACTIVE' | 'INACTIVE';
+  order: number;
+  startDate?: string;
+  endDate?: string;
 }
