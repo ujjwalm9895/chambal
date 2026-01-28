@@ -74,11 +74,22 @@ export default function Advertisements() {
       return;
     }
 
+    // Validate image URL format
+    let imageUrl = editingAd.imageUrl.trim();
+    if (!imageUrl.startsWith('http://') && !imageUrl.startsWith('https://')) {
+      imageUrl = 'https://' + imageUrl;
+    }
+
     try {
+      const payload = {
+        ...editingAd,
+        imageUrl: imageUrl,
+      };
+
       if (editingAd.id) {
-        await axios.patch(`/advertisements/${editingAd.id}`, editingAd);
+        await axios.patch(`/advertisements/${editingAd.id}`, payload);
       } else {
-        await axios.post('/advertisements', editingAd);
+        await axios.post('/advertisements', payload);
       }
       setOpen(false);
       fetchAds();
@@ -93,7 +104,12 @@ export default function Advertisements() {
       });
     } catch (error: any) {
       console.error('Failed to save advertisement:', error);
-      alert(error.response?.data?.message || 'Failed to save advertisement');
+      const errorMessage = error.response?.data?.message || 'Failed to save advertisement';
+      if (error.response?.data?.message?.includes('imageUrl') || error.response?.data?.message?.includes('URL')) {
+        alert(`Invalid Image URL: ${errorMessage}\n\nPlease make sure the URL starts with http:// or https://`);
+      } else {
+        alert(errorMessage);
+      }
     }
   };
 
@@ -180,12 +196,24 @@ export default function Advertisements() {
                 </TableCell>
                 <TableCell>{ad.order}</TableCell>
                 <TableCell>
-                  {ad.imageUrl && (
+                  {ad.imageUrl ? (
                     <img
                       src={ad.imageUrl}
                       alt={ad.title}
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        const parent = target.parentElement;
+                        if (parent) {
+                          parent.innerHTML = '<span style="color: #d32f2f; font-size: 12px;">Image not found</span>';
+                        }
+                      }}
                       style={{ width: 100, height: 50, objectFit: 'cover', borderRadius: 4 }}
                     />
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No image
+                    </Typography>
                   )}
                 </TableCell>
                 <TableCell align="right">
@@ -230,8 +258,50 @@ export default function Advertisements() {
             value={editingAd.imageUrl}
             onChange={(e) => setEditingAd({ ...editingAd, imageUrl: e.target.value })}
             required
-            helperText="URL of the advertisement image"
+            helperText="Paste the image URL here"
           />
+          {editingAd.imageUrl && (
+            <Box sx={{ mt: 2, mb: 2 }}>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                Image Preview:
+              </Typography>
+              <Box
+                sx={{
+                  border: '1px solid #ddd',
+                  borderRadius: 1,
+                  p: 1,
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  minHeight: 150,
+                  bgcolor: '#f5f5f5',
+                }}
+              >
+                <img
+                  src={editingAd.imageUrl}
+                  alt="Preview"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      const errorText = document.createElement('div');
+                      errorText.textContent = 'Failed to load image. Please check the URL.';
+                      errorText.style.color = '#d32f2f';
+                      errorText.style.padding = '20px';
+                      errorText.style.textAlign = 'center';
+                      parent.appendChild(errorText);
+                    }
+                  }}
+                  style={{
+                    maxWidth: '100%',
+                    maxHeight: 200,
+                    objectFit: 'contain',
+                  }}
+                />
+              </Box>
+            </Box>
+          )}
           <TextField
             margin="dense"
             label="Link URL"
