@@ -182,6 +182,15 @@ export default function PostEditor() {
     setSaving(true);
     try {
       const finalStatus = status || (isScheduled ? 'SCHEDULED' : post.status);
+      
+      // Set publishedAt for published posts if not already set
+      let publishedAt = post.publishedAt;
+      if (finalStatus === 'PUBLISHED' && !publishedAt && !isScheduled) {
+        publishedAt = new Date().toISOString();
+      } else if (isScheduled && post.scheduledDate) {
+        publishedAt = new Date(post.scheduledDate).toISOString();
+      }
+      
       const payload = {
         title: post.title,
         slug: post.slug,
@@ -191,7 +200,7 @@ export default function PostEditor() {
         imageDescription: post.imageDescription,
         metaKeywords: post.metaKeywords,
         status: finalStatus,
-        publishedAt: isScheduled && post.scheduledDate ? new Date(post.scheduledDate).toISOString() : post.publishedAt,
+        publishedAt: publishedAt,
         isSlider: post.isSlider,
         isFeatured: post.isFeatured,
         isBreaking: post.isBreaking,
@@ -581,6 +590,18 @@ export default function PostEditor() {
               />
             )}
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 2 }}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => handleSave('PUBLISHED')}
+                disabled={saving || !post.title || !post.slug}
+                sx={{
+                  bgcolor: '#4caf50',
+                  '&:hover': { bgcolor: '#45a049' },
+                }}
+              >
+                Publish
+              </Button>
               <Button
                 variant="outlined"
                 fullWidth
