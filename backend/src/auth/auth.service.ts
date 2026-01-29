@@ -75,7 +75,7 @@ export class AuthService {
     const payload = { sub: userId, email, role };
     return this.jwtService.sign(payload, {
       secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN') || '7d',
+      // No expiration - tokens never expire
     });
   }
 
